@@ -1,0 +1,82 @@
+{
+  "name": "cortico-world-bubble-emotes",
+  "version": "0.2.1",
+  "type": "module",
+  "description": "Coopanion 表情与表情包：37 个 emoji 基础表情、语境含义、身体动作同步和 PNG 表情包。头顶混排气泡需要 presentation schema 1 桌宠宿主。",
+  "license": "AGPL-3.0-or-later",
+  "main": "./src/index.ts",
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "cortico-world",
+    "cortico",
+    "coopanion",
+    "emoji",
+    "emotes",
+    "sticker",
+    "stickers",
+    "表情",
+    "表情包",
+    "桌宠",
+    "气泡"
+  ],
+  "os": [
+    "win32"
+  ],
+  "cortico": {
+    "kind": "world",
+    "api": 6,
+    "describe": "describe.json",
+    "displayName": "表情与表情包 · Bubble Emotes",
+    "webUiClient": "dist/webui.js",
+    "tags": [
+      "experimental",
+      "requires-extension",
+      "external-setup"
+    ],
+    "locales": {
+      "zh": {
+        "displayName": "表情与表情包 · Bubble Emotes",
+        "description": "Coopanion 表情与表情包：37 个 emoji 基础表情、语境含义、身体动作同步和 PNG 表情包。头顶混排气泡需要 presentation schema 1 桌宠宿主。"
+      },
+      "en": {
+        "displayName": "Bubble Emotes · Emoji & Stickers",
+        "description": "37 reviewed emoji with contextual usage, static PNG stickers and synchronized body expressions. Requires a presentation-schema-1 desktop-pet host."
+      }
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "describe.json",
+    "README.md",
+    "CHANGELOG.md",
+    "compat"
+  ],
+  "scripts": {
+    "test": "npm --prefix ../.. test -- packages/cortico-world-bubble-emotes/tests",
+    "typecheck": "tsc --noEmit",
+    "build": "esbuild web/client.ts --bundle --format=esm --outfile=dist/webui.js"
+  },
+  "devDependencies": {
+    "cortico": "^0.2.5",
+    "@types/node": "^22.20.4",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9",
+    "esbuild": "^0.28.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oceanxuhaiao/coopanion-bubble-emotes.git",
+    "directory": "packages/cortico-world-bubble-emotes"
+  },
+  "homepage": "https://github.com/oceanxuhaiao/coopanion-bubble-emotes#readme",
+  "bugs": {
+    "url": "https://github.com/oceanxuhaiao/coopanion-bubble-emotes/issues"
+  },
+  "author": "oceanxuhaiao",
+  "publishConfig": {
+    "access": "public"
+  }
+}
