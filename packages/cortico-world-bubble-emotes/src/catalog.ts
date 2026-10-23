@@ -1,5 +1,5 @@
 import type { Emote } from './library.ts';
-export const CATALOG_VERSION=1;
+export const CATALOG_VERSION=2;
 export const EMOTIONS=["neutral","calm","joy","amusement","excitement","celebration","affection","playfulness","shyness","embarrassment","surprise","thinking","confusion","skepticism","worry","fear","sadness","grief","disappointment","comfort","apology","anger","frustration","determination","pride","gratitude","tiredness","sleepy","disgust","illness"] as const;
 export const DEFAULT_EMOTES:Emote[]=[
   {
@@ -704,8 +704,8 @@ export const DEFAULT_EMOTES:Emote[]=[
   {
     "id": "comfort",
     "kind": "emoji",
-    "text": "🫂",
-    "description": "people hugging",
+    "text": "💙",
+    "description": "blue heart",
     "emotions": [
       "comfort"
     ],
@@ -715,7 +715,7 @@ export const DEFAULT_EMOTES:Emote[]=[
     "enabled": true,
     "source": "https://www.unicode.org/emoji/charts/emoji-list.html",
     "license": "Unicode character (system font rendering; no vendor artwork)",
-    "unicodeName": "people hugging",
+    "unicodeName": "blue heart",
     "bodyExpression": "neutral",
     "usage": "支持、陪伴、安慰；表达愿意在场。",
     "avoid": [
@@ -724,7 +724,7 @@ export const DEFAULT_EMOTES:Emote[]=[
     "example": "难过的话，我可以陪你待一会儿。",
     "aliases": [
       "安慰",
-      "拥抱",
+      "支持",
       "陪伴"
     ]
   },

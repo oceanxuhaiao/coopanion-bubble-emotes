@@ -11,11 +11,21 @@ describe('persistent emote library',()=>{
       const lock=join(a.root,'library.json.lock');writeFileSync(lock,'active writer');expect(()=>a.put({...a.get('calm'),example:'blocked'})).toThrow(/busy/);rmSync(lock);expect(a.get('calm').example).toBe('first');
     }finally{rmSync(dir,{recursive:true,force:true});}
   });
-  it('cleans a new image if its index commit fails',()=>{
-    const dir=mkdtempSync(join(tmpdir(),'emote-transaction-'));
-    try{const a=new EmoteLibrary(dir);const backup=join(a.root,'library.json.bak');mkdirSync(backup);
-      const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=','base64');
-      expect(()=>a.importPng(png,{...a.get('calm'),id:'image'})).toThrow();expect(readdirSync(a.root).filter(n=>n.endsWith('.png'))).toEqual([]);expect(readdirSync(a.root)).not.toContain('library.json.lock');
+  it('preserves legacy image records and files but excludes them from search and updates',()=>{
+    const dir=mkdtempSync(join(tmpdir(),'emote-legacy-'));
+    try{const a=new EmoteLibrary(dir),index=join(a.root,'library.json'),raw=JSON.parse(readFileSync(index,'utf8'));
+      const entry={...a.get('calm'),id:'old-image',kind:'sticker',text:undefined,file:'a'.repeat(64)+'.png',sha256:'a'.repeat(64)};
+      raw.emotes.push(entry);writeFileSync(index,JSON.stringify(raw));const file=join(a.root,entry.file);writeFileSync(file,'legacy bytes');
+      expect(a.search('calm').every(e=>e.kind==='emoji')).toBe(true);expect(()=>a.put(entry)).toThrow(/Unicode/);
+      a.put({...a.get('calm'),usage:'Updated'});expect(a.list().find(e=>e.id==='old-image')).toMatchObject(JSON.parse(JSON.stringify(entry)));expect(readFileSync(file,'utf8')).toBe('legacy bytes');
+    }finally{rmSync(dir,{recursive:true,force:true});}
+  });
+  it('migrates only the default unsupported comfort glyph, preserving user settings',()=>{
+    const dir=mkdtempSync(join(tmpdir(),'emote-comfort-'));
+    try{const a=new EmoteLibrary(dir),index=join(a.root,'library.json'),raw=JSON.parse(readFileSync(index,'utf8'));
+      Object.assign(raw.emotes.find((e:{id:string})=>e.id==='comfort'),{text:'🫂',description:'people hugging',unicodeName:'people hugging',aliases:['安慰','拥抱','陪伴'],enabled:false,usage:'My usage'});raw.catalogVersion=1;writeFileSync(index,JSON.stringify(raw));
+      const b=new EmoteLibrary(dir);expect(b.get('comfort')).toMatchObject({text:'💙',enabled:false,usage:'My usage'});
+      const bytes=readFileSync(index,'utf8');new EmoteLibrary(dir);expect(readFileSync(index,'utf8')).toBe(bytes);
     }finally{rmSync(dir,{recursive:true,force:true});}
   });
   it('rejects non-emoji content while preserving composed Unicode emoji',()=>{

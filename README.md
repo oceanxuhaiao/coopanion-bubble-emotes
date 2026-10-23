@@ -1,36 +1,27 @@
-# Coopanion 表情与表情包 / Bubble Emotes
+# 普通emoji表情库 / Emoji Library
 
-版本 **0.2.4**，适配 **Coopanion 0.2.8**。37个基础emoji、30类语义、PNG表情包、中文卡片表情库、文字与表情混排、身体状态同步和语音正文过滤。
+**0.3.0：原版Coopanion 0.2.8安装启用即可使用，无需宿主补丁。**
 
-**第三方实验扩展。原版0.2.8需要配套宿主补丁，单独安装npm包不能开启头顶混排气泡。** 安装前阅读[兼容与构建说明](HOST-COMPATIBILITY.md)，不要用0.2.6源码覆盖0.2.8。用户素材、审核与禁用状态继续保留。
-
-```powershell
-npm install cortico-world-bubble-emotes@0.2.4
-```
-
-启用World `bubble-emotes`，按兼容说明更新宿主并显式开启气泡配置。表达偏好跟随Coopanion「习惯」设置；情绪明确的视频评论要求合适的视觉表情，中性叙述允许纯文字，不增加评论次数。模型语义选择仍可能出错，尚未证明主动表情使用率满足全部硬指标。
-
-- [包说明](packages/cortico-world-bubble-emotes/README.md)
-- [表情含义与用法](EMOJI-GUIDE.md)
-- [兼容测试报告](docs/COMPATIBILITY-0.2.8.md)：772通过、1跳过，4条上游形象导入测试因worker退出未完成；未修改官方0.2.8上同样复现。
-- [npm](https://www.npmjs.com/package/cortico-world-bubble-emotes) · [GitHub Releases](https://github.com/oceanxuhaiao/coopanion-bubble-emotes/releases)
-
-搜索关键词：表情、表情包、emoji、stickers。
-
-## 开发验证
-
-Node.js 22+。在本仓库下将官方Coopanion v0.2.8及固定子模块放到`upstream/Coopanion-0.2.8`，先按HOST-COMPATIBILITY.md应用0.2.8补丁、安装依赖并构建宿主。然后在本仓库根目录运行：
+37个基础Unicode emoji、30类含义，支持中文搜索、使用说明、名称/用法编辑和启停。通过原生pet_say.script发送，例如`{"script":"我在这里，慢慢来。😌"}`；也可单独发送普通emoji。
 
 ```powershell
-npm ci --ignore-scripts
-npm run build
-npm run typecheck
-npm test
-npx vitest run --config testing/vitest.audit.config.ts
+npm install cortico-world-bubble-emotes@0.3.0
 ```
 
-随包轻核语音解析适配针对0.4.11；其他版本需单独验证。本包不会自动修改主程序或第三方语音扩展。
+安装、启用World `bubble-emotes`后按主程序提示重新加载。桌宠需要正常启用并连接。没有额外服务、API Key、模型或字体安装依赖；具体字形可用性由系统字体决定。
+
+## 功能范围
+
+0.3.0已移除图片导入/发送、图片表情包、头顶图文富混排、额外气泡渲染器、宿主补丁和语音替换文件。普通文字与emoji字符可在同一个script中显示。
+
+不保证严格身体同步，不保证第三方TTS跳过emoji（原版轻核语音0.4.11会保留emoji输入）。现有图片记录与文件保留但停用，旧宿主/语音改动不会自动撤回。需要恢复原版时使用官方更新或匹配备份，并保留用户数据。模型漏发表情与语义误配仍可能发生。
+
+- [完整包说明与升级注意](packages/cortico-world-bubble-emotes/README.md)
+- [原版兼容验证报告](docs/STOCK-0.3.0.md)：17项测试通过，使用未修改的0.2.8代码与真实本机socket验证标准发送链路；不冒称实际模型行为或音频全流程已验收。
+- [npm](https://www.npmjs.com/package/cortico-world-bubble-emotes/v/0.3.0) · [GitHub Release](https://github.com/oceanxuhaiao/coopanion-bubble-emotes/releases/tag/v0.3.0)
+
+历史0.2.x的补丁和图片功能仅在旧tag/release中保留，不能当作新版功能。旧版开发记录不代表新版支持范围。
 
 ## English
 
-Experimental Windows emoji and sticker World, adapted for Coopanion 0.2.8 / Cortico World API 6. Rich head bubbles require the version-specific companion host patch; installing this npm package alone is insufficient. Read the compatibility guide and test report before installing. Existing assets and review/disabled states persist across upgrades. Offline original hugging artwork avoids missing system glyphs for 🫂. Speech uses text only. Context selection is performed by the conversation model and can fail; automated acceptance tests do not prove a 100% real-model usage rate. This release does not automatically patch the app or third-party speech extensions.
+Version 0.3.0 supplies Unicode emoji meanings for stock Coopanion 0.2.8. Install and enable the World, then use existing pet_say.script. No host patch, external service, API key or extra runtime dependency. Pictures, sticker sending, rich bubbles, renderer hooks and speech adapters are removed. System fonts determine glyph coverage. Confirmed body synchronization and third-party emoji filtering are not guaranteed. Legacy image files remain on disk but are inactive; upgrading does not undo old host or voice modifications. Experimental model behavior remains subject to missing or inappropriate emoji selections.

@@ -1,8 +1,7 @@
 import {isEmojiContent} from './emoji.ts';
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync, copyFileSync, openSync, closeSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
-import { pngSize } from './media.ts';
 
 import {DEFAULT_EMOTES as defaults, EMOTIONS, CATALOG_VERSION} from './catalog.ts';
 export {EMOTIONS} from './catalog.ts';
@@ -45,6 +44,10 @@ export class EmoteLibrary {
       const raw = JSON.parse(readFileSync(this.index,'utf8'));
       if (raw.schemaVersion !== 1 || !Array.isArray(raw.emotes)) throw new Error('Unsupported library schema; restore a matching backup before writing.');
       this.data = {schemaVersion:1,catalogVersion:raw.catalogVersion,emotes:raw.emotes.map(validateEmote)};
+      if((raw.catalogVersion??0)<2) {
+        const old=this.data.emotes.find(e=>e.id==='comfort'&&e.kind==='emoji'&&e.text==='🫂'&&e.description==='people hugging'&&e.unicodeName==='people hugging');
+        if(old){old.text='💙';old.description='blue heart';old.unicodeName='blue heart';if(JSON.stringify(old.aliases)===JSON.stringify(['安慰','拥抱','陪伴']))old.aliases=['安慰','支持','陪伴'];}
+      }
       if((raw.catalogVersion??0)<CATALOG_VERSION) {
         for(const seed of defaults) {
           const old=this.data.emotes.find(e=>e.id===seed.id);
@@ -70,36 +73,15 @@ export class EmoteLibrary {
   }
   list() { this.data=this.readIndex();return structuredClone(this.data.emotes); }
   search(emotion: Emotion, maxIntensity = 1, query = '') {
-    return this.list().filter((e) => e.enabled && e.reviewed && e.intensity <= maxIntensity && e.emotions.includes(emotion) && !e.forbidden.includes(emotion) && (!query || [e.id,e.description,e.usage??'',...(e.aliases??[])].some(value=>value.toLowerCase().includes(query.toLowerCase())))).sort((a,b)=>a.intensity-b.intensity || a.id.localeCompare(b.id));
+    return this.list().filter((e) => e.kind === 'emoji' && e.enabled && e.reviewed && e.intensity <= maxIntensity && e.emotions.includes(emotion) && !e.forbidden.includes(emotion) && (!query || [e.id,e.description,e.usage??'',...(e.aliases??[])].some(value=>value.toLowerCase().includes(query.toLowerCase())))).sort((a,b)=>a.intensity-b.intensity || a.id.localeCompare(b.id));
   }
   get(id: string) { this.data=this.readIndex();const e = this.data.emotes.find((e) => e.id === id); if (!e) throw new Error('Unknown emote.'); return structuredClone(e); }
   put(raw: unknown) {return this.withLock(()=>this.putLocked(raw));}
   private putLocked(raw:unknown) {
-    const e = validateEmote(raw);this.data=this.readIndex();const before = this.data;
+    const e = validateEmote(raw);if(e.kind!=='emoji')throw new Error('Only Unicode emoji can be edited in this version.');this.data=this.readIndex();const before = this.data;
     this.data = {...this.data,emotes:[...this.data.emotes.filter((p)=>p.id!==e.id),e]};
     try { this.save(); } catch (error) { this.data=before; throw error; }
     return e;
-  }
-  importPng(bytes: Uint8Array, metadata: Record<string, unknown>) {
-    pngSize(bytes);
-    const sha256=createHash('sha256').update(bytes).digest('hex'), file=`${sha256}.png`;
-    // Imports remain unreviewed until the person checks image contents and any written words.
-    const entry=validateEmote({...metadata,kind:'sticker',file,sha256,reviewed:false,enabled:true});
-    return this.withLock(()=>{
-      const target=join(this.root,file),created=!existsSync(target);
-      if(!created&&createHash('sha256').update(readFileSync(target)).digest('hex')!==sha256)throw new Error('Existing sticker hash mismatch.');
-      if(created)writeFileSync(target,bytes,{flag:'wx'});
-      try{return this.putLocked(entry);}catch(error){
-        if(created&&!this.readIndex().emotes.some(e=>e.file===file))unlinkSync(target);
-        throw error;
-      }
-    });
-  }
-  bytes(e: Emote) {
-    if (e.kind !== 'sticker' || !e.file) throw new Error('Not a sticker.');
-    const bytes=readFileSync(join(this.root,e.file));
-    if (createHash('sha256').update(bytes).digest('hex') !== e.sha256) throw new Error('Sticker hash mismatch.');
-    return bytes;
   }
   private save() {
     if (existsSync(this.index)) copyFileSync(this.index,`${this.index}.bak`);

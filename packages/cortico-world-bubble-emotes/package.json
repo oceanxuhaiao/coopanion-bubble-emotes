@@ -1,8 +1,8 @@
 {
   "name": "cortico-world-bubble-emotes",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "type": "module",
-  "description": "Coopanion 表情与表情包：37 个基础表情、PNG 表情包、语境含义与身体同步。已适配 0.2.8，头顶混排气泡需配套宿主补丁。",
+  "description": "原版 Coopanion 0.2.8 普通emoji表情库：安装启用即可使用，无需主程序补丁；不含图片、表情包发送或自定义气泡渲染。",
   "license": "AGPL-3.0-or-later",
   "main": "./src/index.ts",
   "engines": {
@@ -14,8 +14,6 @@
     "coopanion",
     "emoji",
     "emotes",
-    "sticker",
-    "stickers",
     "表情",
     "表情包",
     "桌宠",
@@ -28,31 +26,35 @@
     "kind": "world",
     "api": 6,
     "describe": "describe.json",
-    "displayName": "表情与表情包 · Bubble Emotes",
+    "displayName": "表情库 · Emoji",
     "webUiClient": "dist/webui.js",
     "tags": [
-      "experimental",
-      "requires-extension",
-      "external-setup"
+      "experimental"
     ],
     "locales": {
       "zh": {
-        "displayName": "表情与表情包 · Bubble Emotes",
-        "description": "Coopanion 表情与表情包：37 个基础表情、PNG 表情包、语境含义与身体同步。已适配 0.2.8，头顶混排气泡需配套宿主补丁。"
+        "displayName": "表情库 · Emoji",
+        "description": "原版 Coopanion 0.2.8 普通emoji表情库：安装启用即可使用，无需主程序补丁；不含图片、表情包发送或自定义气泡渲染。"
       },
       "en": {
-        "displayName": "Bubble Emotes · Emoji & Stickers",
-        "description": "37 contextual emoji and PNG stickers with body synchronization. Adapted for Coopanion 0.2.8; rich head bubbles require the matching host patch."
+        "displayName": "Emoji Library",
+        "description": "Unicode emoji meanings for stock Coopanion 0.2.8. No host patches, image sending, sticker rendering or rich-bubble hooks."
       }
     }
   },
   "files": [
-    "src",
-    "dist",
+    "src/catalog.ts",
+    "src/config.ts",
+    "src/definition.ts",
+    "src/emoji.ts",
+    "src/index.ts",
+    "src/library.ts",
+    "src/world.ts",
+    "src/ENV_PROMPT.md",
+    "dist/webui.js",
     "describe.json",
     "README.md",
-    "CHANGELOG.md",
-    "compat"
+    "CHANGELOG.md"
   ],
   "scripts": {
     "test": "npm --prefix ../.. test -- packages/cortico-world-bubble-emotes/tests",

@@ -1,3 +1,11 @@
+## 0.3.0
+
+- BREAKING: target stock Coopanion 0.2.8 with Unicode emoji written directly in pet_say.script.
+- Remove picture import/sending, sticker/rich-bubble paths, renderer hooks, host patches and speech adapters from the published package.
+- Preserve legacy image records and files without exposing or sending them. Retain Unicode edits and disabled states.
+- Replace the untouched default comfort glyph with 💙 for broader font coverage.
+- Remove guarantees of confirmed body synchronization and third-party speech filtering; stock soft-voice 0.4.11 retains emoji in speech input.
+
 ## 0.2.4
 
 - Port the companion host patch to official Coopanion 0.2.8 and its pinned Cortico 0.2.6 / World API 6.
