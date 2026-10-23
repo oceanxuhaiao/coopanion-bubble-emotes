@@ -6,6 +6,7 @@ function withoutEmoji(text) {
 }
 export function speechText(script) {
   if(typeof script!=='string')return '';
+  if(!script.includes('`'))script=script.replace(/\((?:neutral|happy|wink|love|shy|surprised|angry|sad|sleepy|thinking|smug|pout|worried|determined|flustered|scared|excited|cry|confused)\)/g,'');
   return withoutEmoji(script.replace(/【[^】]*】/g,'').replace(/<[^<>\r\n]*>|＜[^＜＞\r\n]*＞/g,''))
     .replace(/\s+/g,' ').replace(/ +([，。！？、,.!?;:；：])/g,'$1').trim();
 }

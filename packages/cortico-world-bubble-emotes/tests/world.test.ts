@@ -6,7 +6,7 @@ import type {WorldHost,ToolOutcome} from 'cortico/core/types.ts';
 import {BubbleEmotesWorld} from '../src/world.ts';
 import {BUBBLE_EMOTES} from '../src/definition.ts';
 import {parsePageId} from 'cortico/web/shared/webui-protocol.ts';
-const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jT1kAAAAASUVORK5CYII=','base64');
+const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=','base64');
 describe('emote World with a real persistent library',()=>{
   it('registers a valid World page with the same definition and runtime id',()=>{
     const world=new BubbleEmotesWorld('unused');

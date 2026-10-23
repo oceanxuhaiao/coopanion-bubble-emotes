@@ -1,10 +1,28 @@
 import {describe,it,expect} from 'vitest';
-import {mkdtempSync,rmSync,readFileSync,writeFileSync} from 'node:fs';
+import {mkdtempSync,rmSync,readFileSync,writeFileSync,mkdirSync,readdirSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {EmoteLibrary, EMOTIONS, validateEmote} from '../src/library.ts';
 import {DEFAULT_EMOTES} from '../src/catalog.ts';
 describe('persistent emote library',()=>{
+  it('merges independent writers and reports an active lock without overwriting data',()=>{
+    const dir=mkdtempSync(join(tmpdir(),'emote-writers-'));
+    try{const a=new EmoteLibrary(dir),b=new EmoteLibrary(dir);a.put({...a.get('calm'),example:'first'});b.put({...b.get('fear'),example:'second'});expect(a.get('fear').example).toBe('second');expect(b.get('calm').example).toBe('first');
+      const lock=join(a.root,'library.json.lock');writeFileSync(lock,'active writer');expect(()=>a.put({...a.get('calm'),example:'blocked'})).toThrow(/busy/);rmSync(lock);expect(a.get('calm').example).toBe('first');
+    }finally{rmSync(dir,{recursive:true,force:true});}
+  });
+  it('cleans a new image if its index commit fails',()=>{
+    const dir=mkdtempSync(join(tmpdir(),'emote-transaction-'));
+    try{const a=new EmoteLibrary(dir);const backup=join(a.root,'library.json.bak');mkdirSync(backup);
+      const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=','base64');
+      expect(()=>a.importPng(png,{...a.get('calm'),id:'image'})).toThrow();expect(readdirSync(a.root).filter(n=>n.endsWith('.png'))).toEqual([]);expect(readdirSync(a.root)).not.toContain('library.json.lock');
+    }finally{rmSync(dir,{recursive:true,force:true});}
+  });
+  it('rejects non-emoji content while preserving composed Unicode emoji',()=>{
+    for(const text of ['1','ordinary text','😊123'])expect(()=>validateEmote({...DEFAULT_EMOTES[0],text})).toThrow();
+    for(const text of ['1️⃣','👨‍👩‍👧‍👦','🇨🇳','👍🏽'])expect(validateEmote({...DEFAULT_EMOTES[0],text}).text).toBe(text);
+    expect(()=>validateEmote({...DEFAULT_EMOTES[0],source:'a'.repeat(200000)})).toThrow();
+  });
   it('covers every semantic category with usable meaning and preserves user teaching on migration',()=>{
     const dir=mkdtempSync(join(tmpdir(),'emote-catalog-'));
     try{

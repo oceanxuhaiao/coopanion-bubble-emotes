@@ -33,7 +33,7 @@ export class BubbleEmotesWorld implements World {
     }}));
   }
   webUi(): WorldWebUiDecl {
-    return {label:'表情与表情包 / Bubble Emotes',panels:[{id:'library',title:'Emotes / 表情库',getMethods:['list','preview']}],
+    return {label:'表情与表情包',panels:[{id:'library',title:'表情库',getMethods:['list','preview']}],
       invoke:async(panel,method,args)=>{
         if(panel!=='library')throw new Error('Unknown panel.');
         if(method==='list')return this.lib.list();
@@ -50,6 +50,6 @@ export class BubbleEmotesWorld implements World {
         }
         throw new Error('Unknown library method.');
       },
-      promptDocs:[{key:'worlds.bubble-emotes.envPrompt',title:'Bubble emotes',description:'Context, body-state and speech rules.',path:fileURLToPath(new URL('./ENV_PROMPT.md',import.meta.url)),role:'envPrompt'}]};
+      promptDocs:[{key:'worlds.bubble-emotes.envPrompt',title:'使用说明',description:'表情使用、身体同步与语音规则。',path:fileURLToPath(new URL('./ENV_PROMPT.md',import.meta.url)),role:'envPrompt'}]};
   }
 }

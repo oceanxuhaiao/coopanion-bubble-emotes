@@ -3,6 +3,11 @@ import {describe,it,expect} from 'vitest';
 import {speechText,petSayFromEntry} from './parser.js';
 import {DEFAULT_EMOTES} from '../../packages/cortico-world-bubble-emotes/src/catalog.ts';
 describe('soft-voice text projection',()=>{
+  it('reads only flat shorthand script, never emoji/expression fields',()=>{
+    const e={tool:'pet_say',mod:'desktop-pet',run:'r',seq:1,args:{script:'Thanks.',emoji:'🙏',expression:'neutral'}};
+    expect(petSayFromEntry(e).text).toBe('Thanks.');
+    expect(petSayFromEntry({...e,args:{emoji:'😌',expression:'neutral'}})).toBeNull();
+  });
   it('skips every built-in emoji and its teaching metadata',()=>{
     const entry={tool:'pet_say',mod:'desktop-pet',run:'r',seq:1,args:{presentation:{schema:1,segments:DEFAULT_EMOTES.map(e=>({kind:'emoji',text:e.text,alt:e.usage}))}}};
     expect(petSayFromEntry(entry)).toBeNull();
@@ -17,4 +22,10 @@ describe('soft-voice text projection',()=>{
     expect(petSayFromEntry({...e,args:{presentation:{schema:1,segments:[{kind:'emoji',text:'😴'}]}}})).toBeNull();
     expect(petSayFromEntry({...e,failed:true})).toBeNull();
   });
+});
+
+it('skips explicit built-in parenthesized body markers but preserves ordinary prose',()=>{
+  expect(speechText('Thanks. (happy) 😊')).toBe('Thanks.');
+  expect(speechText('Maybe (later).')).toBe('Maybe (later).');
+  expect(speechText('Example `(happy)`')).toBe('Example `(happy)`');
 });

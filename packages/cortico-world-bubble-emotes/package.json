@@ -1,8 +1,8 @@
 {
   "name": "cortico-world-bubble-emotes",
-  "version": "0.2.1",
+  "version": "0.2.4",
   "type": "module",
-  "description": "Coopanion 表情与表情包：37 个 emoji 基础表情、语境含义、身体动作同步和 PNG 表情包。头顶混排气泡需要 presentation schema 1 桌宠宿主。",
+  "description": "Coopanion 表情与表情包：37 个基础表情、PNG 表情包、语境含义与身体同步。已适配 0.2.8，头顶混排气泡需配套宿主补丁。",
   "license": "AGPL-3.0-or-later",
   "main": "./src/index.ts",
   "engines": {
@@ -38,11 +38,11 @@
     "locales": {
       "zh": {
         "displayName": "表情与表情包 · Bubble Emotes",
-        "description": "Coopanion 表情与表情包：37 个 emoji 基础表情、语境含义、身体动作同步和 PNG 表情包。头顶混排气泡需要 presentation schema 1 桌宠宿主。"
+        "description": "Coopanion 表情与表情包：37 个基础表情、PNG 表情包、语境含义与身体同步。已适配 0.2.8，头顶混排气泡需配套宿主补丁。"
       },
       "en": {
         "displayName": "Bubble Emotes · Emoji & Stickers",
-        "description": "37 reviewed emoji with contextual usage, static PNG stickers and synchronized body expressions. Requires a presentation-schema-1 desktop-pet host."
+        "description": "37 contextual emoji and PNG stickers with body synchronization. Adapted for Coopanion 0.2.8; rich head bubbles require the matching host patch."
       }
     }
   },

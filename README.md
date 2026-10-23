@@ -1,18 +1,36 @@
-# Coopanion 表情与表情包 · Bubble Emotes
+# Coopanion 表情与表情包 / Bubble Emotes
 
-独立 World 扩展，37 个 emoji、30 类语义、PNG 表情包和身体表情同步。当前版本 0.2.1，Windows 实验版。
+版本 **0.2.4**，适配 **Coopanion 0.2.8**。37个基础emoji、30类语义、PNG表情包、中文卡片表情库、文字与表情混排、身体状态同步和语音正文过滤。
 
-**需要支持 presentation schema 1 的桌宠宿主。官方原版 Coopanion 0.2.6 只安装 npm 包不能完整使用。**
+**第三方实验扩展。原版0.2.8需要配套宿主补丁，单独安装npm包不能开启头顶混排气泡。** 安装前阅读[兼容与构建说明](HOST-COMPATIBILITY.md)，不要用0.2.6源码覆盖0.2.8。用户素材、审核与禁用状态继续保留。
 
-- [扩展安装、语音适配与数据更新说明](packages/cortico-world-bubble-emotes/README.md)
-- [宿主补丁构建](HOST-COMPATIBILITY.md)
-- [基础表情含义、禁忌与例句](EMOJI-GUIDE.md)
-- [npm 包](https://www.npmjs.com/package/cortico-world-bubble-emotes)
+```powershell
+npm install cortico-world-bubble-emotes@0.2.4
+```
 
-源码位于 packages/cortico-world-bubble-emotes，语音适配位于 integrations/soft-voice。patches/ 包含固定上游基线的宿主补丁，未发布修改后的主程序二进制。第三方形象必须提供实际身体状态回报。
+启用World `bubble-emotes`，按兼容说明更新宿主并显式开启气泡配置。表达偏好跟随Coopanion「习惯」设置；情绪明确的视频评论要求合适的视觉表情，中性叙述允许纯文字，不增加评论次数。模型语义选择仍可能出错，尚未证明主动表情使用率满足全部硬指标。
 
-语义选择由模型结合用法说明判断，未进行模型微调，不保证零误配。通过测试：表情库与语音过滤、World 页面注册、19 种内置身体表达映射、气泡状态转换。没有声称覆盖所有模型、语音引擎或系统字体。
+- [包说明](packages/cortico-world-bubble-emotes/README.md)
+- [表情含义与用法](EMOJI-GUIDE.md)
+- [兼容测试报告](docs/COMPATIBILITY-0.2.8.md)：772通过、1跳过，4条上游形象导入测试因worker退出未完成；未修改官方0.2.8上同样复现。
+- [npm](https://www.npmjs.com/package/cortico-world-bubble-emotes) · [GitHub Releases](https://github.com/oceanxuhaiao/coopanion-bubble-emotes/releases)
 
-此仓库不包含用户聊天记录、运行配置、令牌或导入素材。AGPL-3.0-or-later，保留上游派生文件的原许可。仅使用 Unicode 字符，不分发厂商 emoji 图片。
+搜索关键词：表情、表情包、emoji、stickers。
 
-English: Experimental Coopanion emoji and sticker World with contextual guidance and body synchronization. Requires the provided host patch; stock 0.2.6 alone is insufficient. See the package README for setup and limitations.
+## 开发验证
+
+Node.js 22+。在本仓库下将官方Coopanion v0.2.8及固定子模块放到`upstream/Coopanion-0.2.8`，先按HOST-COMPATIBILITY.md应用0.2.8补丁、安装依赖并构建宿主。然后在本仓库根目录运行：
+
+```powershell
+npm ci --ignore-scripts
+npm run build
+npm run typecheck
+npm test
+npx vitest run --config testing/vitest.audit.config.ts
+```
+
+随包轻核语音解析适配针对0.4.11；其他版本需单独验证。本包不会自动修改主程序或第三方语音扩展。
+
+## English
+
+Experimental Windows emoji and sticker World, adapted for Coopanion 0.2.8 / Cortico World API 6. Rich head bubbles require the version-specific companion host patch; installing this npm package alone is insufficient. Read the compatibility guide and test report before installing. Existing assets and review/disabled states persist across upgrades. Offline original hugging artwork avoids missing system glyphs for 🫂. Speech uses text only. Context selection is performed by the conversation model and can fail; automated acceptance tests do not prove a 100% real-model usage rate. This release does not automatically patch the app or third-party speech extensions.

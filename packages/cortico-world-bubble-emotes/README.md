@@ -1,12 +1,12 @@
-# 表情与表情包 · Bubble Emotes 0.2.1
+# 表情与表情包 · Bubble Emotes 0.2.2（本地验证版）
 
 Coopanion 桌宠的 emoji 表情与 PNG 表情包扩展，提供 37 个基础表情、30 类语义，以及适用场景、禁忌、别名、例句和身体表情建议。支持单独表情、文字混排、PNG 表情包导入审核，语音适配跳过视觉内容。
 
-**实验版 / Windows / 需要额外宿主支持。官方原版 Coopanion 0.2.6 不具备 presentation schema 1 头顶混排气泡，单独安装本包不能开启该能力。** 本项目并非 Coopanion 官方扩展；本包不自动修改主程序或其他扩展。
+**实验版 / Windows / 需要额外宿主支持。官方原版 Coopanion 0.2.8 不具备 presentation schema 1 头顶混排气泡，单独安装本包不能开启该能力。** 本项目并非 Coopanion 官方扩展；本包不自动修改主程序或其他扩展。
 
 ## 安装
 
-1. 使用 [GitHub 仓库](https://github.com/oceanxuhaiao/coopanion-bubble-emotes) 的宿主补丁构建支持 presentation schema 1 的桌宠宿主。补丁基线：Coopanion f30ab6b6ca0fd17e4a66ce290dbec76839ea6399，Cortico 子模块 d54a0d83400a038a557aa0914b8f624719b32b2d；详见仓库 HOST-COMPATIBILITY.md。补丁也随 npm 包附在 compat/ 目录中。
+1. 使用 [GitHub 仓库](https://github.com/oceanxuhaiao/coopanion-bubble-emotes) 的宿主补丁构建支持 presentation schema 1 的桌宠宿主。0.2.4补丁基线：Coopanion 0.2.8（3dd0892c2d70a026253ab980af392302b88ff8b1），Cortico子模块ace4c640af07f21c15f81116c370fda0fe828389；安装步骤见[兼容说明](compat/HOST-COMPATIBILITY.md)。补丁也随 npm 包附在 compat/ 目录中。
 2. 在 Coopanion 高级模式“扩展”中安装 npm 包 cortico-world-bubble-emotes，重启后在 World 总览启用 bubble-emotes。
 3. 侧栏“表情与表情包 / Bubble Emotes”进入表情库，可搜索中文名称、阅读用法、导入与审核 PNG。
 
@@ -28,6 +28,24 @@ Coopanion 桌宠的 emoji 表情与 PNG 表情包扩展，提供 37 个基础表
 
 ## English
 
-Experimental Windows World for Coopanion emoji and static PNG stickers, with 37 emotes across 30 semantic categories, contextual usage examples and body-expression suggestions. Stock Coopanion 0.2.6 is insufficient: build the included host patch first. The patched renderer checks the observed face before display and projects text only for speech. Third-party soft-voice needs the provided source adapter. Semantic selection is performed by the conversation model and can be wrong. Library migrations preserve edits and imports.
+Experimental Windows World for Coopanion emoji and static PNG stickers, with 37 emotes across 30 semantic categories, contextual usage examples and body-expression suggestions. Stock Coopanion 0.2.8 is insufficient: build the included host patch first. The patched renderer checks the observed face before display and projects text only for speech. Third-party soft-voice needs the provided source adapter. Semantic selection is performed by the conversation model and can be wrong. Library migrations preserve edits and imports.
 
 AGPL-3.0-or-later. Unicode characters render through the system font; no vendor emoji artwork is distributed. Host-derived files retain the upstream license and notices.
+
+## 本地0.2.2调整
+
+表达偏好跟随Coopanion习惯中的none/poke/all/custom：安静克制、默认自然、积极活泼；自定义仅已选且已获即时回应的触碰更主动，文字/语音按自然偏好。它不会新增触发回应或睡眠唤醒权限。表情库页只读显示当前习惯和近期表达结果，不提供第二套模式。
+
+基础emoji可直接一次pet_say.presentation；自定义素材仍走审核/检索/真实blob句柄。宿主将习惯摘要随新消息提供给模型，并保留最多50条不含正文的内存诊断。旧宿主界面会提示能力不足；仍需安装配套宿主补丁。
+
+库写入使用library.json.lock互斥，提交前读取最新索引；异常退出留下锁时，关闭所有共享数据实例后才人工清除stale lock。不要在仍有写入者时删除。用户素材和禁用设置不被重置。PNG新增CRC与有界解压/扫描线检查，并非对浏览器所有颜色配置处理的安全证明。
+
+本版本仅本地验证，尚未推送npm/GitHub/市场；第二阶段自动目录选择契约仍待实施。
+
+0.2.2补充：常用emoji可用pet_say({script:"Thanks.",emoji:"🙏",expression:"neutral"})平铺参数，一次完成发送和身体校验，不必拼requestId/segments。这是明确选择emoji的便捷写法，不是根据emotion自动读取私有库。只有模型已给出emoji才做相容身体映射；普通关键词不触发表情添加。复杂混排仍使用presentation。
+
+
+本地0.2.3内置🫂拥抱图案，表情库与配套宿主的头顶气泡无需系统字形即可显示。气泡修复需要更新宿主web/presentation.js和emoji-art.js并重新加载桌宠。
+Local 0.2.3 bundles original artwork for 🫂 in the library and patched head bubbles. Update the companion host presentation.js and emoji-art.js and reload the pet; no system font download is required.
+
+当前本地版本0.2.4已针对Coopanion 0.2.8重新移植宿主补丁。旧0.2.6基线保留为单独补丁；不能用旧文件覆盖0.2.8。适配验证不等于模型主动使用表情的硬指标已通过。

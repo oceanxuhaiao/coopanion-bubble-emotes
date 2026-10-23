@@ -2,8 +2,8 @@
   "compilerOptions": {
     "target":"ES2022", "module":"ESNext", "moduleResolution":"Bundler", "strict":true,
     "allowImportingTsExtensions":true, "noEmit":true, "skipLibCheck":true, "lib":["ES2022","DOM"],
-    "typeRoots":["./upstream/Coopanion/node_modules/@types"], "types":["node"],
-    "paths":{"cortico/*":["./upstream/Coopanion/vendor/cortico/src/*"],"vitest":["./upstream/Coopanion/node_modules/vitest"]}
+    "typeRoots":["./upstream/Coopanion-0.2.8/node_modules/@types"], "types":["node"],
+    "paths":{"cortico/*":["./upstream/Coopanion-0.2.8/vendor/cortico/src/*"],"vitest":["./upstream/Coopanion-0.2.8/node_modules/vitest"]}
   },
   "include":["packages/**/*.ts", "integrations/**/*.ts"]
 }
