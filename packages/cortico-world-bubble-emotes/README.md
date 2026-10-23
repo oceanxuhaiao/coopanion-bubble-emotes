@@ -1,6 +1,10 @@
-# 普通emoji表情库 / Emoji Library
+# 表情
 
-0.3.0适用于**原版Coopanion 0.2.8**。安装、启用扩展后即可通过原生`pet_say.script`在气泡中显示普通Unicode emoji；无需修改主程序、安装字体或更换语音解析器。字体覆盖决定具体字形能否显示，不保证所有系统字体都支持全部emoji。
+![表情标志](assets/icon.svg)
+
+让桌宠的问候带上笑意，也让安慰多一点温度。37 个 emoji 与语境提示，把开心、思考和陪伴写进气泡。原版 Coopanion 0.2.8 安装启用即可，无需修改主程序。
+
+0.3.1适用于**原版Coopanion 0.2.8**。安装、启用扩展后即可通过原生`pet_say.script`在气泡中显示普通Unicode emoji；无需修改主程序、安装字体或更换语音解析器。字体覆盖决定具体字形能否显示，不保证所有系统字体都支持全部emoji。
 
 ## 安装和使用
 
@@ -24,6 +28,6 @@
 
 ## English
 
-Version 0.3.0 supplies 37 Unicode emoji across 30 meanings for stock Coopanion 0.2.8. Install and enable this World, then put emoji directly in the existing pet_say.script. No host patch, external service, extra API key or model download is required. The built-in desktop pet must be enabled and connected. Glyph availability depends on system fonts.
+Version 0.3.1 supplies 37 Unicode emoji across 30 meanings for stock Coopanion 0.2.8. Install and enable this World, then put emoji directly in the existing pet_say.script. No host patch, external service, extra API key or model download is required. The built-in desktop pet must be enabled and connected. Glyph availability depends on system fonts.
 
 Image import/sending, stickers, rich head bubbles, custom rendering, special presentation/emoji/expression fields, host patches and speech adapters are removed. Body labels are optional script-marker suggestions, without confirmed synchronization. Third-party speech filtering is not guaranteed; stock soft-voice 0.4.11 retains emoji in its TTS input. Existing library data and legacy image files remain on disk, while image entries are inactive and hidden. Upgrading does not automatically undo old host or speech modifications. Model expression frequency and contextual correctness remain experimental.

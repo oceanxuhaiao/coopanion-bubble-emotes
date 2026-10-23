@@ -1,8 +1,8 @@
 {
   "name": "cortico-world-bubble-emotes",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
-  "description": "原版 Coopanion 0.2.8 普通emoji表情库：安装启用即可使用，无需主程序补丁；不含图片、表情包发送或自定义气泡渲染。",
+  "description": "让桌宠的问候带上笑意，也让安慰多一点温度。37 个 emoji 与语境提示，把开心、思考和陪伴写进气泡。原版 Coopanion 0.2.8 安装启用即可，无需修改主程序。",
   "license": "AGPL-3.0-or-later",
   "main": "./src/index.ts",
   "engines": {
@@ -15,7 +15,6 @@
     "emoji",
     "emotes",
     "表情",
-    "表情包",
     "桌宠",
     "气泡"
   ],
@@ -26,21 +25,22 @@
     "kind": "world",
     "api": 6,
     "describe": "describe.json",
-    "displayName": "表情库 · Emoji",
+    "displayName": "表情",
     "webUiClient": "dist/webui.js",
     "tags": [
       "experimental"
     ],
     "locales": {
       "zh": {
-        "displayName": "表情库 · Emoji",
-        "description": "原版 Coopanion 0.2.8 普通emoji表情库：安装启用即可使用，无需主程序补丁；不含图片、表情包发送或自定义气泡渲染。"
+        "displayName": "表情",
+        "description": "让桌宠的问候带上笑意，也让安慰多一点温度。37 个 emoji 与语境提示，把开心、思考和陪伴写进气泡。原版 Coopanion 0.2.8 安装启用即可，无需修改主程序。"
       },
       "en": {
-        "displayName": "Emoji Library",
-        "description": "Unicode emoji meanings for stock Coopanion 0.2.8. No host patches, image sending, sticker rendering or rich-bubble hooks."
+        "displayName": "表情",
+        "description": "A little smile in a greeting, a little warmth in a quiet moment. Give your pet 37 emoji and contextual hints for joy, thought and companionship. Works with stock Coopanion 0.2.8; no host patch required."
       }
-    }
+    },
+    "icon": "assets/icon.svg"
   },
   "files": [
     "src/catalog.ts",
@@ -54,7 +54,8 @@
     "dist/webui.js",
     "describe.json",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "assets/icon.svg"
   ],
   "scripts": {
     "test": "npm --prefix ../.. test -- packages/cortico-world-bubble-emotes/tests",

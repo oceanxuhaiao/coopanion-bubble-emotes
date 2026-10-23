@@ -31,7 +31,7 @@ export class BubbleEmotesWorld implements World {
     }}));
   }
   webUi(): WorldWebUiDecl {
-    return {label:'表情库',panels:[{id:'library',title:'表情库',getMethods:['list','preview']}],
+    return {label:'表情',panels:[{id:'library',title:'表情',getMethods:['list','preview']}],
       invoke:async(panel,method,args)=>{
         if(panel!=='library')throw new Error('Unknown panel.');
         if(method==='list')return this.lib.list().filter(e=>e.kind==='emoji');

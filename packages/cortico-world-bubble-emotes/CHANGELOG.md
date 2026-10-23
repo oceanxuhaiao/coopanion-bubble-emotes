@@ -1,3 +1,9 @@
+## 0.3.1
+
+- Rename the display title to 表情 and refresh the description.
+- Add an original, font-independent SVG logo through cortico.icon.
+- Keep the stock-compatible Unicode-only feature scope unchanged.
+
 ## 0.3.0
 
 - BREAKING: target stock Coopanion 0.2.8 with Unicode emoji written directly in pet_say.script.
