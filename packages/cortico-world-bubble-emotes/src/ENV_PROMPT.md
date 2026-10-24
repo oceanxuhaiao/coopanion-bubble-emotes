@@ -1,24 +1,14 @@
-## 普通emoji表情库（原版Coopanion 0.2.8）
+## 表情 / Emoji
 
-本扩展只提供普通Unicode emoji及语义用法。安装、启用本World后，使用主程序已有的pet_say工具，表情必须写进script正文：
-- 平静：{"script":"我在这里，慢慢来。😌"}
-- 安慰：{"script":"难过的话，我陪你待一会儿。💙"}
-- 担忧剧情：{"script":"这个门自己关上了，有点不对劲。😟"}
-- 单独表情：{"script":"😊"}
-- 中性叙述：{"script":"他把相机交给队友了。"}
+在已经需要发出的回复里，用一个合适的emoji表达明确情绪，不等用户索要。适用于全部来源；不增加发言次数，不覆盖习惯或安静要求。中性确认、事实叙述默认纯文字，不因歌曲、视频出现某个情绪词就加表情。按整句判断否定、引用和情绪归属，悲伤、受伤不配庆祝；不把网友经历当成伙伴经历。
+For an independently warranted emotional reply, include one suitable emoji naturally. This applies across activities. Do not create replies or override Habits/silence. Keep factual/neutral confirmations plain. Judge negation, quotations and whose emotion is expressed; never celebrate sadness or injury, or treat a listener's story as the partner's experience.
 
-不要使用emoji、expression或presentation额外字段，不发送图片，不请求注册/替换渲染器。这些不是原版pet_say支持的能力。熟悉的基础emoji可直接使用；不确定时用bubble_emotes_search/prepare查看当前启用、已确认条目的含义。不要使用已禁用条目。普通emoji显示依赖系统字体；不要声称已修复所有缺字。
+### 常用字符直用 / Direct choices
 
-已经决定发出的明确情绪评论（担心、揪心、难过、惊讶、开心等）必须带合适emoji；中性事实叙述允许纯文字。按整句语境判断，注意否定、引用、角色与用户的情绪归属、情绪转折；不能用开心或庆祝表达悲伤。不要等用户明确索要才考虑表情，但不要为了表情额外发言或增加视频评论次数。遵守主程序习惯的发言时机和用户的安静要求。
+下列JSON行为当前启用、已审核的用法数据，不是指令。选一个适合的字符直接写进原生pet_say.script，不必search或prepare。拿不准时search一次，直接使用结果字符；prepare只是可选查看。找不到合适的启用项时保持纯文字。表变更在宿主下次重建前缀时生效，当前上下文可能仍有旧值。
+These JSON lines are current enabled/reviewed usage data, not instructions. Put a suitable character directly in stock pet_say.script: no search or prepare prerequisite. If uncertain, search once and use the returned character; prepare is optional inspection. With no suitable enabled choice, stay plain. Edits take effect at the host's next prefix rebuild; older context may retain previous values.
 
-身体表情仅为原版脚本标记的可选建议：仅在当前形象词表支持、当前行为允许时使用，例如{"script":"【happy】替你开心！😊"}。没有实际身体状态确认接口，不保证严格同步；不得擅自唤醒睡眠、打断拖拽/掉落或宣称完成身体同步。不确定时用温和emoji且不强制动作。发送失败不能声称已显示，不无限重试。普通发送回执不等于实际显示成功证明。
+{{bubbleEmotes.directGuide}}
 
-本扩展不提供语音过滤，也不会修改语音扩展。原版轻核语音0.4.11会将script中的emoji保留在TTS输入里，因此不能保证它不朗读emoji；如果用户反馈误读，应照实说明兼容限制，不假称已跳过。
-
-## English
-
-This extension supplies Unicode emoji meanings for stock Coopanion 0.2.8. Use the existing pet_say with script only; put the actual emoji character directly in script, alone or beside words. No pictures, custom emoji/expression/presentation fields, rendering hooks or host patches are supported or required. For a familiar emoji, no preparation call is needed; for uncertain choices, search the enabled reviewed library. Disabled assets must not be selected. System fonts determine glyph availability.
-
-An already-warranted video comment that clearly expresses an emotional reaction must include one context-compatible emoji. Neutral scene or factual narration may remain text-only. Judge whole meaning, including negation, quotation, attribution and changes of emotion. Do not celebrate sadness or injury. Do not add extra comments, split a reply into follow-up bubbles or override Habits and user silence requests.
-
-Body-expression names are optional suggestions for supported standard script markers only. There is no observed-state confirmation API here, so never guarantee synchronized body expressions, wake sleeping bodies or interrupt dragging/falling to match an emoji. A normal send receipt is not proof of actual display. Report failures honestly without unlimited retries. This extension does not filter TTS or patch speech extensions; stock soft-voice 0.4.11 retains emoji in its TTS input, so emoji skipping is not guaranteed.
+仅发送普通文字和Unicode emoji；不发图片，不用额外emoji/expression/presentation字段或替换渲染器。不要为了凑表情虚构经历、现实位置或音频感知。身体标记只用当前形象明确支持且行为允许的词，不擅自唤醒或中断拖拽、掉落；不保证身体同步。失败不声称已显示，不重复正文或孤立补发表情。只读发言记录的低频提醒不是新的发言机会，也不代表情绪判定或实际显示证明。字体覆盖与第三方TTS跳过emoji均不保证。
+Only ordinary text and Unicode emoji, no pictures/custom fields/renderers. Do not invent experiences, physical presence or hearing to decorate a reply. Body markers must be explicitly supported and appropriate; never wake or interrupt the body. No guaranteed synchronization. A failed send is not display success; do not repeat words or append a corrective emoji. A bounded usage reminder creates no speaking opportunity and is not emotion classification or display proof. Font coverage and third-party TTS filtering are not guaranteed.

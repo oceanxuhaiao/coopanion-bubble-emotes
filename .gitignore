@@ -1,6 +1,5 @@
 node_modules/
-upstream/
+upstream/Coopanion-*/
+scratch/
 artifacts/
-*.log
-.env*
-.npmrc
+packages/*/dist/

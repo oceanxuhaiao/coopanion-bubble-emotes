@@ -1,6 +1,6 @@
 {
   "name": "cortico-world-bubble-emotes",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "module",
   "description": "让桌宠的问候带上笑意，也让安慰多一点温度。37 个 emoji 与语境提示，把开心、思考和陪伴写进气泡。原版 Coopanion 0.2.8 安装启用即可，无需修改主程序。",
   "license": "AGPL-3.0-or-later",
@@ -28,7 +28,8 @@
     "displayName": "表情",
     "webUiClient": "dist/webui.js",
     "tags": [
-      "experimental"
+      "experimental",
+      "high-cost"
     ],
     "locales": {
       "zh": {
@@ -55,7 +56,11 @@
     "describe.json",
     "README.md",
     "CHANGELOG.md",
-    "assets/icon.svg"
+    "assets/icon.svg",
+    "src/usage-fallback.ts",
+    "src/expression-log.ts",
+    "src/cloud-settings.ts",
+    "src/analysis-response.ts"
   ],
   "scripts": {
     "test": "npm --prefix ../.. test -- packages/cortico-world-bubble-emotes/tests",
