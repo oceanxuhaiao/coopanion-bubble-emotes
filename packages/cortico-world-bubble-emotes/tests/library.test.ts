@@ -28,6 +28,22 @@ describe('persistent emote library',()=>{
       const bytes=readFileSync(index,'utf8');new EmoteLibrary(dir);expect(readFileSync(index,'utf8')).toBe(bytes);
     }finally{rmSync(dir,{recursive:true,force:true});}
   });
+  it.each([1,2])('repairs the shipped legacy hug even after catalog %s was marked upgraded, preserving edits and backup',version=>{
+    const dir=mkdtempSync(join(tmpdir(),'comfort-regression-'));
+    try{const a=new EmoteLibrary(dir),index=join(a.root,'library.json'),raw=JSON.parse(readFileSync(index,'utf8'));
+      const edited={...a.get('comfort'),source:version===2?'Unicode':a.get('comfort').source,text:'🫂',description:'A supportive hug, without celebration',unicodeName:'people hugging',enabled:false,reviewed:false,usage:'我的安慰用法',aliases:['我的安慰','拥抱','陪伴']};
+      raw.catalogVersion=version;raw.emotes=raw.emotes.map((e:any)=>e.id==='comfort'?edited:e);const original=JSON.stringify(raw);writeFileSync(index,original);
+      const b=new EmoteLibrary(dir);expect(b.get('comfort')).toEqual({...edited,text:'💙',unicodeName:'blue heart'});expect(JSON.parse(readFileSync(index,'utf8')).catalogVersion).toBe(3);expect(readFileSync(index+'.bak','utf8')).toBe(original);
+      expect(b.list().filter(e=>e.id!=='comfort')).toEqual(raw.emotes.filter((e:any)=>e.id!=='comfort'));
+      const migrated=readFileSync(index,'utf8');new EmoteLibrary(dir);expect(readFileSync(index,'utf8')).toBe(migrated);
+    }finally{rmSync(dir,{recursive:true,force:true});}
+  });
+  it('does not replace a user-selected comfort emoji or custom-source hug',()=>{
+    for(const patch of[{text:'🤗'},{text:'🫂',source:'custom'}]){const dir=mkdtempSync(join(tmpdir(),'comfort-custom-'));
+      try{const a=new EmoteLibrary(dir),index=join(a.root,'library.json'),raw=JSON.parse(readFileSync(index,'utf8'));const edited={...a.get('comfort'),unicodeName:'people hugging',...patch};raw.catalogVersion=2;raw.emotes=raw.emotes.map((e:any)=>e.id==='comfort'?edited:e);writeFileSync(index,JSON.stringify(raw));expect(new EmoteLibrary(dir).get('comfort')).toEqual(edited);
+      }finally{rmSync(dir,{recursive:true,force:true});}
+    }
+  });
   it('rejects non-emoji content while preserving composed Unicode emoji',()=>{
     for(const text of ['1','ordinary text','😊123'])expect(()=>validateEmote({...DEFAULT_EMOTES[0],text})).toThrow();
     for(const text of ['1️⃣','👨‍👩‍👧‍👦','🇨🇳','👍🏽'])expect(validateEmote({...DEFAULT_EMOTES[0],text}).text).toBe(text);

@@ -1,4 +1,5 @@
 export const styles = `
+.be-library .be-consent{display:flex;gap:10px;align-items:flex-start;margin:14px 0}.be-library .be-consent input{flex:none;margin-top:4px}
 .be-library [hidden]{display:none!important}.be-library .be-record-controls{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 12px;align-items:center}.be-library .be-record-controls select{width:auto;max-width:100%}.be-library .be-record-list{display:grid;gap:16px}.be-library .be-record p{margin:8px 0}.be-library .be-record-text{white-space:pre-wrap;font-size:16px}.be-library .be-record textarea{margin-top:12px}.be-library .be-record button[aria-pressed=true]{border-color:var(--be-accent);color:var(--be-accent)}
 .be-library{--be-ink:#25283d;--be-muted:#777b8e;--be-line:#e8e9f1;--be-accent:#515bfa;--be-surface:#fff;color:var(--be-ink)}
 .be-library .be-page{max-width:1100px;margin:0 auto;padding:8px 0 32px;font-size:14px;line-height:1.6}

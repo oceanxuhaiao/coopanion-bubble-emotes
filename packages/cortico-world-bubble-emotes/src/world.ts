@@ -6,8 +6,9 @@ import { UsageFallback } from './usage-fallback.ts';
 import { ExpressionLog } from './expression-log.ts';
 
 export const BUBBLE_EMOTES_TOOL_DECLS: Array<Omit<ToolDef,'handler'>> = [
-  {name:'bubble_emotes_search',tags:['read'],description:'Optional lookup for uncertain or uncommon emoji. For familiar choices use the direct guide and call pet_say immediately; do not search or prepare first. Find enabled, reviewed Unicode emoji by intended meaning. Read usage, avoid rules and examples; judge context, negation, quotation and emotional changes. Pictures are not supported. Use a selected emoji directly in pet_say.script; no other fields or host patches are needed.',parameters:{type:'object',properties:{emotion:{enum:[...EMOTIONS]},maxIntensity:{type:'number',minimum:0,maximum:1},query:{type:'string',maxLength:80}},required:['emotion'],additionalProperties:false}},
+  {name:'bubble_emotes_search',tags:['read'],description:'Optional lookup for uncertain or uncommon emoji. For familiar choices use the direct guide without search/prepare. When draft review is enabled, review the candidate before pet_say. Find enabled, reviewed Unicode emoji by intended meaning. Read usage, avoid rules and examples; judge context, negation, quotation and emotional changes. Pictures are not supported. Use a selected emoji directly in pet_say.script; no other fields or host patches are needed.',parameters:{type:'object',properties:{emotion:{enum:[...EMOTIONS]},maxIntensity:{type:'number',minimum:0,maximum:1},query:{type:'string',maxLength:80}},required:['emotion'],additionalProperties:false}},
   {name:'bubble_emotes_prepare',tags:['read'],description:'Optional inspection by ID, not a sending prerequisite. Search results and the direct guide already contain usable emoji. Read one enabled, reviewed Unicode emoji and its usage. Put the emoji character itself in the standard pet_say.script, alone or beside words. Body expressions are optional script-marker suggestions, not confirmed synchronization. No images, rich presentation, renderer registration or special emoji fields are supported.',parameters:{type:'object',properties:{id:{type:'string'},emotion:{enum:[...EMOTIONS]}},required:['id','emotion'],additionalProperties:false}},
+  {name:'bubble_emotes_review_draft',tags:['read'],barrierAfter:true,interruptible:true,description:'Pre-send draft review, enabled with configured expression analysis. Submit exact draft and short current context, read advisory result, then independently decide on one native pet_say.script. This tool sends nothing and never intercepts pet_say. Never blindly copy advice: neutral/missing conflicts, uncertainty or failed checks should preserve the draft or be reconsidered. Do not review indefinitely or repeat sent replies.',parameters:{type:'object',properties:{draft:{type:'string',maxLength:600},context:{type:'string',maxLength:400}},required:['draft','context'],additionalProperties:false}},
 ];
 export class BubbleEmotesWorld implements World {
   readonly id='bubble-emotes';
@@ -34,13 +35,14 @@ export class BubbleEmotesWorld implements World {
         .sort((a,b)=>a.intensity-b.intensity||a.id.localeCompare(b.id))[0];
       return e ? [JSON.stringify({intent:emotion,emoji:e.text,usage:e.usage??e.description,avoid:e.avoid??[]})] : [];
     });
-    return { 'bubbleEmotes.directGuide': rows.length ? rows.join('\n') : 'No enabled reviewed common emoji. Do not invent a replacement or use disabled entries.' };
+    return { 'bubbleEmotes.draftMode':this.expressionLog?.draftActive()?'Expression analysis and draft review are ENABLED. Before an independently warranted reply, call bubble_emotes_review_draft with the exact draft and short current context. Read its advisory result, then judge whether to send one native pet_say.script. Do not blindly copy; neutral conflicts keep plain. No extra speaking opportunities.':'Expression analysis is OFF; draft review is OFF. Do not call bubble_emotes_review_draft. Ordinary emoji can be used directly; no preparation required.', 'bubbleEmotes.directGuide': rows.length ? rows.join('\n') : 'No enabled reviewed common emoji. Do not invent a replacement or use disabled entries.' };
   }
   private get lib() { if(!this.library) throw new Error('World is not mounted.'); return this.library; }
   private activeEntry(id:string) {const e=this.lib.get(id);if(e.kind!=='emoji')throw new Error('Image assets are not supported in this version.');return e;}
   tools(): ToolDef[] {
-    return BUBBLE_EMOTES_TOOL_DECLS.map(decl=>({...decl,handler:async(args)=>{
+    return BUBBLE_EMOTES_TOOL_DECLS.map(decl=>({...decl,handler:async(args,ctx)=>{
       try {
+        if(decl.name==='bubble_emotes_review_draft'){if(!this.expressionLog)throw Error('World is not mounted.');return{text:JSON.stringify(await this.expressionLog.reviewDraft(args,ctx.signal))};}
         const emotion=asEmotion(args.emotion);
         if(decl.name==='bubble_emotes_search') {
           const max=args.maxIntensity===undefined?1:Number(args.maxIntensity);
@@ -54,11 +56,17 @@ export class BubbleEmotesWorld implements World {
     }}));
   }
   webUi(): WorldWebUiDecl {
-    return {label:'表情',panels:[{id:'library',title:'表情库',getMethods:['list','preview']},{id:'records',title:'表达记录',getMethods:['state']}],
+    let libraryLamp:NonNullable<WorldWebUiDecl['lamps']>[number]={label:'表情库',state:'offline',hint:'扩展尚未启动或已停止'};
+    if(this.library)try{const available=this.library.list().filter(e=>e.kind==='emoji'&&e.enabled&&e.reviewed).length;libraryLamp={label:'表情库',state:available?'online':'offline',hint:available?'可用表情 '+available+' 个；不代表气泡已显示':'没有启用且已确认的表情'};}catch{libraryLamp={label:'表情库',state:'error',hint:'表情库读取失败，请检查数据文件'};}
+    const lamps=[libraryLamp,...(this.expressionLog?.statusLamps()??[{label:'表达分析',state:'offline' as const,hint:'扩展尚未启动或已停止'},{label:'草稿检查',state:'offline' as const,hint:'扩展尚未启动或已停止'}])];
+    return {label:'表情',lamps,panels:[{id:'guide',title:'使用引导',getMethods:['state']},{id:'library',title:'表情库',getMethods:['list','preview']},{id:'records',title:'表达记录',getMethods:['state']}],
       invoke:async(panel,method,args)=>{
-        if(panel==='records'){
+        if(panel==='records'||panel==='guide'){
           const log=this.expressionLog;if(!log)throw Error('表达记录尚未加载');
           if(method==='state')return log.state();
+          if(method==='guide')return log.guide(args[0]);
+          if(method==='test')return log.testConnection();
+          if(method==='enableGuided')return log.enableGuided(args[0]);
           if(method==='cloud')return log.configureCloud(args[0]);
           if(method==='configure')return log.configure(args[0]);
           if(method==='models')return log.models();

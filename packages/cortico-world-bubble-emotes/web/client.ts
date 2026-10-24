@@ -1,8 +1,9 @@
+import {guidePanel} from './guide.ts';
 import type { WebUiClientBundle, WebUiPanelContext } from 'cortico/web/shared/client-panel.ts';
 import type { Emote } from '../src/library.ts';
 import { styles } from './styles.ts';
 import { recordsPanel } from './records.ts';
-const bundle: WebUiClientBundle = {panels:{records:recordsPanel,library:{mount(ctx:WebUiPanelContext){
+const bundle: WebUiClientBundle = {panels:{guide:guidePanel,records:recordsPanel,library:{mount(ctx:WebUiPanelContext){
  const {ui,root,signal}=ctx;root.classList.add('be-library');root.append(ui.h('style',null,styles));const page=ui.h('div','be-page');root.append(page);
  const header=ui.h('div','be-header'),intro=ui.h('div');intro.append(ui.h('h2',null,'给心情加一个表情'),ui.h('p','be-muted','直接用于原版桌宠气泡，无需修改主程序。'));header.append(intro);page.append(header);
  const habit=ui.h('p','be-habit','回应方式由主程序「习惯」管理。');page.append(habit);

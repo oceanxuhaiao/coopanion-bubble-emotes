@@ -44,9 +44,9 @@ export class EmoteLibrary {
       const raw = JSON.parse(readFileSync(this.index,'utf8'));
       if (raw.schemaVersion !== 1 || !Array.isArray(raw.emotes)) throw new Error('Unsupported library schema; restore a matching backup before writing.');
       this.data = {schemaVersion:1,catalogVersion:raw.catalogVersion,emotes:raw.emotes.map(validateEmote)};
-      if((raw.catalogVersion??0)<2) {
-        const old=this.data.emotes.find(e=>e.id==='comfort'&&e.kind==='emoji'&&e.text==='🫂'&&e.description==='people hugging'&&e.unicodeName==='people hugging');
-        if(old){old.text='💙';old.description='blue heart';old.unicodeName='blue heart';if(JSON.stringify(old.aliases)===JSON.stringify(['安慰','拥抱','陪伴']))old.aliases=['安慰','支持','陪伴'];}
+      if((raw.catalogVersion??0)<3) {
+        const old=this.data.emotes.find(e=>e.id==='comfort'&&e.kind==='emoji'&&e.text==='🫂'&&['Unicode','https://www.unicode.org/emoji/charts/emoji-list.html'].includes(e.source)&&(e.unicodeName==='people hugging'||(!e.unicodeName&&['people hugging','A supportive hug, without celebration'].includes(e.description))));
+        if(old){old.text='💙';if(old.description==='people hugging')old.description='blue heart';old.unicodeName='blue heart';if(JSON.stringify(old.aliases)===JSON.stringify(['安慰','拥抱','陪伴']))old.aliases=['安慰','支持','陪伴'];}
       }
       if((raw.catalogVersion??0)<CATALOG_VERSION) {
         for(const seed of defaults) {
@@ -89,3 +89,4 @@ export class EmoteLibrary {
     writeFileSync(temp,JSON.stringify(this.data,null,2),'utf8'); renameSync(temp,this.index);
   }
 }
+

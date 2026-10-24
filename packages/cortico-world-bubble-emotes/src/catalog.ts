@@ -1,5 +1,5 @@
 import type { Emote } from './library.ts';
-export const CATALOG_VERSION=2;
+export const CATALOG_VERSION=3;
 export const EMOTIONS=["neutral","calm","joy","amusement","excitement","celebration","affection","playfulness","shyness","embarrassment","surprise","thinking","confusion","skepticism","worry","fear","sadness","grief","disappointment","comfort","apology","anger","frustration","determination","pride","gratitude","tiredness","sleepy","disgust","illness"] as const;
 export const DEFAULT_EMOTES:Emote[]=[
   {

@@ -1,3 +1,4 @@
+import {cloudProvider,type CloudProvider} from './cloud-providers.ts';
 import {existsSync, readFileSync, writeFileSync, renameSync, unlinkSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import type {WorldContext, WorldSection} from 'cortico/world.ts';
@@ -5,7 +6,7 @@ import type {WorldContext, WorldSection} from 'cortico/world.ts';
 export type SecretStore = Pick<WorldContext<WorldSection>, 'secret' | 'storeSecret'>;
 const unavailable: SecretStore = {secret:()=>'', storeSecret:()=>{throw Error('宿主未提供部署密钥存储');}};
 const secretName = (provider:string)=>`CORTICO_BUBBLE_EMOTES_${provider.toUpperCase()}_API_KEY`;
-type CloudConfig = {provider:'deepseek'|'openai';model:string;keyEnabled:boolean};
+type CloudConfig = {provider:CloudProvider;model:string;keyEnabled:boolean};
 
 /** Only non-secret connection metadata belongs in the World data directory. */
 export class CloudSettings {
@@ -25,7 +26,7 @@ export class CloudSettings {
       }else this.config={provider:legacy.provider,model:legacy.model,keyEnabled:legacy.keyEnabled===true};
     }catch{this.error='云端设置或密钥迁移未完成；原文件保留，请重新填写并保存云端设置。';}
   }
-  private validate(v:any){if(!v||!['deepseek','openai'].includes(v.provider)||typeof v.model!=='string'||!v.model.trim()||v.model.length>120||/[\r\n]/.test(v.model))throw Error('云端设置无效');}
+  private validate(v:any){if(!v||!cloudProvider(v.provider)||typeof v.model!=='string'||!v.model.trim()||v.model.length>120||/[\r\n]/.test(v.model))throw Error('云端设置无效');}
   private validateKey(key:unknown){if(typeof key!=='string'||key.length>512||/\s/.test(key))throw Error('API Key 格式无效');}
   private storeVerified(provider:string,key:string){
     try{this.secrets.storeSecret(secretName(provider),key);if(this.secrets.secret(secretName(provider))!==key)throw Error();}

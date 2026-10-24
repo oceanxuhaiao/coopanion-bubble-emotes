@@ -1,0 +1,7 @@
+import{CLOUD_PROVIDERS,type CloudProvider}from'../src/cloud-providers.ts';
+export function populateProviders(ui:any,provider:HTMLSelectElement){for(const[v,p]of Object.entries(CLOUD_PROVIDERS)){const o=ui.h('option',null,p.label);o.value=v;provider.append(o);}}
+export function mountCloudModels(ui:any,parent:HTMLElement,provider:HTMLSelectElement,model:HTMLInputElement,signal:AbortSignal,id:string){
+ const presets=ui.h('select');presets.setAttribute('aria-label','常用云端模型');const note=ui.h('p','be-muted','选择常用模型，或在模型名称中手动填写。可用性及价格以服务商账户为准，保存后请测试连接。');parent.append(presets,note);
+ function refresh(){presets.replaceChildren();const options=CLOUD_PROVIDERS[provider.value as CloudProvider]?.models??[];for(const value of['',...options]){const o=ui.h('option',null,value||'常用模型 / 手动填写');o.value=value;presets.append(o);}presets.value=options.includes(model.value as never)?model.value:'';}
+ provider.addEventListener('change',()=>{const p=CLOUD_PROVIDERS[provider.value as CloudProvider];model.value=p?.models[0]??'';refresh();model.dispatchEvent(new model.ownerDocument.defaultView!.Event('input',{bubbles:true}));},{signal});presets.addEventListener('change',()=>{if(presets.value){model.value=presets.value;model.dispatchEvent(new model.ownerDocument.defaultView!.Event('input',{bubbles:true}));}},{signal});model.addEventListener('input',refresh,{signal});refresh();return{refresh,presets,note};
+}
