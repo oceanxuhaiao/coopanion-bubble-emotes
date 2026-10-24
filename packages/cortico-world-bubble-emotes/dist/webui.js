@@ -1,4 +1,4 @@
-// packages/cortico-world-bubble-emotes/web/draft-status.ts
+// web/draft-status.ts
 function mountDraftStatus(ctx, parent) {
   const { ui, signal } = ctx, box = ui.h("details", "be-card"), summary = ui.h("summary", null, "\u8349\u7A3F\u68C0\u67E5\u8BB0\u5F55");
   box.append(summary, ui.h("p", "be-muted", "\u968F\u8868\u8FBE\u8BB0\u5F55\u4E0E\u5206\u6790\u540C\u6B65\u542F\u505C\uFF0C\u65E0\u9700\u5355\u72EC\u8BBE\u7F6E\u3002\u68C0\u67E5\u4EC5\u7ED9\u5EFA\u8BAE\uFF1B\u4E2D\u6027\u51B2\u7A81\u4FDD\u7559\u539F\u7A3F\uFF0C\u6A21\u578B\u7ED3\u5408\u5F53\u524D\u8BED\u5883\u51B3\u5B9A\uFF0C\u4E0D\u673A\u68B0\u7167\u6284\u3002\u53EF\u80FD\u7ED5\u8FC7\u68C0\u67E5\uFF0C\u4E0D\u80FD\u4FDD\u8BC1\u6BCF\u6B21\u90FD\u4F7F\u7528\u8868\u60C5\u3002"));
@@ -30,7 +30,7 @@ function mountDraftStatus(ctx, parent) {
   }, 5e3);
 }
 
-// packages/cortico-world-bubble-emotes/src/cloud-providers.ts
+// src/cloud-providers.ts
 var CLOUD_PROVIDERS = {
   deepseek: { label: "DeepSeek", url: "https://api.deepseek.com/chat/completions", models: ["deepseek-flash", "deepseek-chat"] },
   openai: { label: "OpenAI", url: "https://api.openai.com/v1/chat/completions", models: ["gpt-4.1-mini", "gpt-4o-mini"] },
@@ -39,7 +39,7 @@ var CLOUD_PROVIDERS = {
   glm: { label: "\u667A\u8C31 GLM", url: "https://open.bigmodel.cn/api/paas/v4/chat/completions", models: ["glm-4.7-flash", "glm-4.5-air"] }
 };
 
-// packages/cortico-world-bubble-emotes/web/cloud-controls.ts
+// web/cloud-controls.ts
 function populateProviders(ui, provider) {
   for (const [v, p] of Object.entries(CLOUD_PROVIDERS)) {
     const o = ui.h("option", null, p.label);
@@ -79,7 +79,7 @@ function mountCloudModels(ui, parent, provider, model, signal, id) {
   return { refresh, presets, note };
 }
 
-// packages/cortico-world-bubble-emotes/web/styles.ts
+// web/styles.ts
 var styles = `
 .be-library .be-consent{display:flex;gap:10px;align-items:flex-start;margin:14px 0}.be-library .be-consent input{flex:none;margin-top:4px}
 .be-library [hidden]{display:none!important}.be-library .be-record-controls{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 12px;align-items:center}.be-library .be-record-controls select{width:auto;max-width:100%}.be-library .be-record-list{display:grid;gap:16px}.be-library .be-record p{margin:8px 0}.be-library .be-record-text{white-space:pre-wrap;font-size:16px}.be-library .be-record textarea{margin-top:12px}.be-library .be-record button[aria-pressed=true]{border-color:var(--be-accent);color:var(--be-accent)}
@@ -134,7 +134,7 @@ var styles = `
 @media(prefers-color-scheme:dark){.be-library{--be-ink:#e2e4f2;--be-muted:#a3a9bf;--be-line:#373b50;--be-surface:#242737;--be-accent:#777eff}.be-library .be-tabs,.be-library .be-badge{background:#303448}.be-library .be-example{background:#303448}.be-library .be-pending{background:#493c28;color:#f3cc82}}
 `;
 
-// packages/cortico-world-bubble-emotes/web/guide.ts
+// web/guide.ts
 var guidePanel = { mount(ctx) {
   const { ui, root, signal } = ctx;
   root.classList.add("be-library");
@@ -328,7 +328,7 @@ var guidePanel = { mount(ctx) {
   }, 5e3);
 } };
 
-// packages/cortico-world-bubble-emotes/web/records.ts
+// web/records.ts
 var emotions = { neutral: "\u4E2D\u6027", calm: "\u5E73\u9759\u3001\u653E\u677E", joy: "\u5F00\u5FC3", amusement: "\u597D\u7B11", excitement: "\u5174\u594B", celebration: "\u5E86\u795D", affection: "\u559C\u6B22", playfulness: "\u4FCF\u76AE", shyness: "\u5BB3\u7F9E", embarrassment: "\u5C34\u5C2C", surprise: "\u60CA\u8BB6", thinking: "\u601D\u8003", confusion: "\u7591\u60D1", skepticism: "\u6000\u7591", worry: "\u62C5\u5FC3", fear: "\u5BB3\u6015", sadness: "\u96BE\u8FC7", grief: "\u60B2\u75DB", disappointment: "\u5931\u671B", comfort: "\u5B89\u6170\u3001\u966A\u4F34", apology: "\u6B49\u610F", anger: "\u751F\u6C14", frustration: "\u6CAE\u4E27", determination: "\u575A\u5B9A", pride: "\u81EA\u8C6A", gratitude: "\u611F\u8C22", tiredness: "\u75B2\u60EB", sleepy: "\u56F0\u5026", disgust: "\u53CD\u611F", illness: "\u4E0D\u9002", uncertain: "\u8BED\u5883\u4E0D\u8DB3\uFF0C\u6682\u4E0D\u786E\u5B9A" };
 var verdicts = { appropriate: "\u4F7F\u7528\u5408\u9002", missing: "\u53EF\u80FD\u6F0F\u7528", unnecessary: "\u4E0D\u4F7F\u7528\u4E5F\u5408\u7406", inappropriate: "\u53EF\u80FD\u4E0D\u5339\u914D", uncertain: "\u6682\u4E0D\u80FD\u5224\u65AD" };
 var states = { pending: "\u7B49\u5F85\u5206\u6790", analyzing: "\u6B63\u5728\u5206\u6790", unavailable: "\u6682\u672A\u5206\u6790", error: "\u5206\u6790\u672A\u5B8C\u6210", deferred: "\u5F85\u624B\u52A8\u5206\u6790", needs_review: "\u5F85\u590D\u6838", skipped: "\u5DF2\u8DF3\u8FC7" };
@@ -561,7 +561,7 @@ var recordsPanel = { mount(ctx) {
   }, 2500);
 } };
 
-// packages/cortico-world-bubble-emotes/web/client.ts
+// web/client.ts
 var bundle = { panels: { guide: guidePanel, records: recordsPanel, library: { mount(ctx) {
   const { ui, root, signal } = ctx;
   root.classList.add("be-library");

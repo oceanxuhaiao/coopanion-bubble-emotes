@@ -1,4 +1,7 @@
-import { describeTools, type WorldDefinition } from 'cortico/world.ts';
+import type { WorldDefinition } from 'cortico/world.ts';
+import type {ToolSpec,DescribeText} from 'cortico/core/types.ts';
+// Keep the runtime independent of the host's TypeScript modules.
+const describeTools=(decls:readonly ToolSpec[],summaries:Readonly<Record<string,DescribeText>>)=>decls.map(({name,description,parameters,tags})=>({name,description,parameters,tags,summary:summaries[name]}));
 import { BUBBLE_EMOTES_DEFAULTS, type BubbleEmotesConfigSection } from './config.ts';
 import { BubbleEmotesWorld, BUBBLE_EMOTES_TOOL_DECLS } from './world.ts';
 export const BUBBLE_EMOTES: WorldDefinition<BubbleEmotesConfigSection> = {

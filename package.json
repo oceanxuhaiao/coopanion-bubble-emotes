@@ -1,9 +1,16 @@
 {
-  "name": "coopanion-bubble-emotes-workspace", "private": true, "type": "module",
+  "name": "coopanion-bubble-emotes-workspace",
+  "private": true,
+  "type": "module",
   "scripts": {
     "test": "vitest run --config vitest.config.ts",
     "typecheck": "tsc --noEmit",
-    "build": "esbuild packages/cortico-world-bubble-emotes/web/client.ts --bundle --format=esm --outfile=packages/cortico-world-bubble-emotes/dist/webui.js"
+    "build": "node packages/cortico-world-bubble-emotes/scripts/build.mjs"
   },
-  "devDependencies":{"@types/node":"22.20.4","typescript":"5.9.3","vitest":"2.1.9","esbuild":"0.28.2"}
+  "devDependencies": {
+    "@types/node": "22.20.4",
+    "typescript": "5.9.3",
+    "vitest": "2.1.9",
+    "esbuild": "0.28.2"
+  }
 }

@@ -1,6 +1,6 @@
 # 表情
 
-> 0.3.3 更新：使用引导、分析联动草稿检查、更多模型选择、Ollama检测反馈、安慰字符迁移修复与侧栏实时状态灯。主动使用效果仍待行为验收，保留 experimental / high-cost 标签。
+> 0.3.4 修复：发布包改用编译好的JavaScript入口，解决普通Node环境加载npm扩展失败，无需安装tsx或TypeScript。保留0.3.3全部功能，主动使用效果仍待行为验收，保留experimental / high-cost标签。
 
 ## 侧栏实时状态灯
 

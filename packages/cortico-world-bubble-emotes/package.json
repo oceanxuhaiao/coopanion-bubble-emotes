@@ -1,10 +1,10 @@
 {
   "name": "cortico-world-bubble-emotes",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "type": "module",
   "description": "让桌宠的问候带上笑意，也让安慰多一点温度。37 个 emoji 与语境提示，把开心、思考和陪伴写进气泡。原版 Coopanion 0.2.8 安装启用即可，无需修改主程序。",
   "license": "AGPL-3.0-or-later",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "engines": {
     "node": ">=22"
   },
@@ -44,29 +44,18 @@
     "icon": "assets/icon.svg"
   },
   "files": [
-    "src/catalog.ts",
-    "src/config.ts",
-    "src/definition.ts",
-    "src/emoji.ts",
-    "src/index.ts",
-    "src/library.ts",
-    "src/world.ts",
-    "src/ENV_PROMPT.md",
+    "dist/index.js",
+    "dist/ENV_PROMPT.md",
     "dist/webui.js",
     "describe.json",
     "README.md",
     "CHANGELOG.md",
-    "assets/icon.svg",
-    "src/usage-fallback.ts",
-    "src/expression-log.ts",
-    "src/cloud-settings.ts",
-    "src/cloud-providers.ts",
-    "src/analysis-response.ts"
+    "assets/icon.svg"
   ],
   "scripts": {
     "test": "npm --prefix ../.. test -- packages/cortico-world-bubble-emotes/tests",
     "typecheck": "tsc --noEmit",
-    "build": "esbuild web/client.ts --bundle --format=esm --outfile=dist/webui.js"
+    "build": "node scripts/build.mjs"
   },
   "devDependencies": {
     "cortico": "^0.2.5",
