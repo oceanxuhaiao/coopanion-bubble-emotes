@@ -1,8 +1,8 @@
 {
   "name": "cortico-world-bubble-emotes",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "type": "module",
-  "description": "让桌宠的问候带上笑意，也让安慰多一点温度。37 个 emoji 与语境提示，把开心、思考和陪伴写进气泡。原版 Coopanion 0.2.8 安装启用即可，无需修改主程序。",
+  "description": "让开心有笑意，安慰有温度。37个emoji搭配情绪分析与草稿检查，新增可编辑的“情绪→表情→身体心情”映射和身体心情建议；不自动安排动作，减少对睡眠与互动的干扰。适配Coopanion 0.2.8；分析需配置模型。",
   "license": "AGPL-3.0-or-later",
   "main": "./dist/index.js",
   "engines": {
@@ -16,7 +16,10 @@
     "emotes",
     "表情",
     "桌宠",
-    "气泡"
+    "气泡",
+    "情绪",
+    "表达助手",
+    "身体心情"
   ],
   "os": [
     "win32"
@@ -25,7 +28,7 @@
     "kind": "world",
     "api": 6,
     "describe": "describe.json",
-    "displayName": "表情",
+    "displayName": "表达助手 · 情绪与表情",
     "webUiClient": "dist/webui.js",
     "tags": [
       "experimental",
@@ -33,12 +36,12 @@
     ],
     "locales": {
       "zh": {
-        "displayName": "表情",
-        "description": "让桌宠的问候带上笑意，也让安慰多一点温度。37 个 emoji 与语境提示，把开心、思考和陪伴写进气泡。原版 Coopanion 0.2.8 安装启用即可，无需修改主程序。"
+        "displayName": "表达助手 · 情绪与表情",
+        "description": "让开心有笑意，安慰有温度。37个emoji搭配情绪分析与草稿检查，新增可编辑的“情绪→表情→身体心情”映射和身体心情建议；不自动安排动作，减少对睡眠与互动的干扰。适配Coopanion 0.2.8；分析需配置模型。"
       },
       "en": {
-        "displayName": "表情",
-        "description": "A little smile in a greeting, a little warmth in a quiet moment. Give your pet 37 emoji and contextual hints for joy, thought and companionship. Works with stock Coopanion 0.2.8; no host patch required."
+        "displayName": "表达助手 · 情绪与表情",
+        "description": "Help your pet express joy, comfort and thought with 37 emoji, emotion analysis, draft review and editable body-expression mappings. For Coopanion 0.2.8; analysis requires a configured model."
       }
     },
     "icon": "assets/icon.svg"

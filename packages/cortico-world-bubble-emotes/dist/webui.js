@@ -1,29 +1,54 @@
+// src/catalog.ts
+var EMOTIONS = ["neutral", "calm", "joy", "amusement", "excitement", "celebration", "affection", "playfulness", "shyness", "embarrassment", "surprise", "thinking", "confusion", "skepticism", "worry", "fear", "sadness", "grief", "disappointment", "comfort", "apology", "anger", "frustration", "determination", "pride", "gratitude", "tiredness", "sleepy", "disgust", "illness"];
+
+// web/emotion-labels.ts
+var EMOTION_LABELS = { neutral: "\u4E2D\u6027", calm: "\u5E73\u9759\u3001\u653E\u677E", joy: "\u5F00\u5FC3", amusement: "\u597D\u7B11", excitement: "\u5174\u594B", celebration: "\u5E86\u795D", affection: "\u559C\u6B22", playfulness: "\u4FCF\u76AE", shyness: "\u5BB3\u7F9E", embarrassment: "\u5C34\u5C2C", surprise: "\u60CA\u8BB6", thinking: "\u601D\u8003", confusion: "\u7591\u60D1", skepticism: "\u6000\u7591", worry: "\u62C5\u5FC3", fear: "\u5BB3\u6015", sadness: "\u96BE\u8FC7", grief: "\u60B2\u75DB", disappointment: "\u5931\u671B", comfort: "\u5B89\u6170\u3001\u966A\u4F34", apology: "\u6B49\u610F", anger: "\u751F\u6C14", frustration: "\u6CAE\u4E27", determination: "\u575A\u5B9A", pride: "\u81EA\u8C6A", gratitude: "\u611F\u8C22", tiredness: "\u75B2\u60EB", sleepy: "\u56F0\u5026", disgust: "\u53CD\u611F", illness: "\u4E0D\u9002", uncertain: "\u8BED\u5883\u4E0D\u8DB3\uFF0C\u6682\u4E0D\u786E\u5B9A" };
+
+// src/body-mapping.ts
+var BODY_EXPRESSIONS = { neutral: "\u5E73\u9759", happy: "\u5F00\u5FC3", wink: "\u7728\u773C", love: "\u559C\u6B22\uFF0F\u7231\u5FC3", shy: "\u5BB3\u7F9E", surprised: "\u60CA\u8BB6", angry: "\u751F\u6C14", sad: "\u96BE\u8FC7", sleepy: "\u72AF\u56F0", thinking: "\u601D\u8003", smug: "\u5F97\u610F", pout: "\u561F\u5634", worried: "\u62C5\u5FC3", determined: "\u8BA4\u771F\uFF0F\u575A\u5B9A", flustered: "\u614C\u5F20\uFF0F\u7A98", scared: "\u5BB3\u6015", excited: "\u671F\u5F85\uFF0F\u661F\u661F\u773C", cry: "\u5927\u54ED", confused: "\u7591\u60D1" };
+var BODY_MATCH_LABELS = { direct: "\u76F4\u63A5\u5BF9\u5E94", approximate: "\u8FD1\u4F3C\u5BF9\u5E94", none: "\u65E0\u5408\u9002\u5BF9\u5E94" };
+
 // web/draft-status.ts
 function mountDraftStatus(ctx, parent) {
   const { ui, signal } = ctx, box = ui.h("details", "be-card"), summary = ui.h("summary", null, "\u8349\u7A3F\u68C0\u67E5\u8BB0\u5F55");
-  box.append(summary, ui.h("p", "be-muted", "\u968F\u8868\u8FBE\u8BB0\u5F55\u4E0E\u5206\u6790\u540C\u6B65\u542F\u505C\uFF0C\u65E0\u9700\u5355\u72EC\u8BBE\u7F6E\u3002\u68C0\u67E5\u4EC5\u7ED9\u5EFA\u8BAE\uFF1B\u4E2D\u6027\u51B2\u7A81\u4FDD\u7559\u539F\u7A3F\uFF0C\u6A21\u578B\u7ED3\u5408\u5F53\u524D\u8BED\u5883\u51B3\u5B9A\uFF0C\u4E0D\u673A\u68B0\u7167\u6284\u3002\u53EF\u80FD\u7ED5\u8FC7\u68C0\u67E5\uFF0C\u4E0D\u80FD\u4FDD\u8BC1\u6BCF\u6B21\u90FD\u4F7F\u7528\u8868\u60C5\u3002"));
-  const list = ui.h("div");
-  box.append(list);
+  box.append(summary, ui.h("p", "be-muted", "\u8349\u7A3F\u68C0\u67E5\u968F\u8868\u8FBE\u5206\u6790\u542F\u505C\u3002\u8EAB\u4F53\u534F\u8C03\u53EF\u5355\u72EC\u5173\u95ED\uFF0C\u4EC5\u4F7F\u7528\u5185\u7F6E19\u79CD\u8EAB\u4F53\u8868\u60C5\uFF0C\u4E0D\u5B89\u6392\u8DF3\u821E\u3001\u8DD1\u52A8\u6216\u7761\u89C9\u3002\u516C\u5F00\u63A5\u53E3\u65E0\u6CD5\u786E\u8BA4\u5B9E\u65F6\u8EAB\u4F53\u72B6\u6001\u65F6\u4EC5\u7ED9\u5EFA\u8BAE\u3001\u4E0D\u8FFD\u52A0\u6807\u8BB0\uFF1B\u4E0D\u4FDD\u8BC1\u6BCF\u6B21\u68C0\u67E5\u6216\u663E\u793A\u6210\u529F\u3002"));
+  const toggle = ui.button("\u6B63\u5728\u8BFB\u53D6\u8EAB\u4F53\u534F\u8C03\u8BBE\u7F6E"), status = ui.h("p", "be-muted"), list = ui.h("div");
+  box.append(toggle, status, list);
   parent.append(box);
-  let busy = false;
+  let busy = false, enabled = false;
   async function refresh() {
     if (busy || signal.aborted) return;
     busy = true;
     try {
       const s = await ctx.invoke("state");
       if (signal.aborted) return;
-      summary.textContent = "\u8349\u7A3F\u68C0\u67E5 \xB7 " + (s.draftMode?.enabled ? "\u5DF2\u968F\u5206\u6790\u542F\u7528" : "\u5206\u6790\u6682\u505C\u65F6\u5173\u95ED");
+      enabled = s.bodyCoordination?.enabled ?? false;
+      toggle.textContent = enabled ? "\u5173\u95ED\u8EAB\u4F53\u534F\u8C03" : "\u5F00\u542F\u8EAB\u4F53\u534F\u8C03";
+      status.textContent = enabled ? "\u8EAB\u4F53\u534F\u8C03\u5DF2\u5F00\u542F \xB7 " + (s.draftMode?.enabled ? "\u968F\u8349\u7A3F\u68C0\u67E5\u63D0\u4F9B\u5EFA\u8BAE" : "\u7B49\u5F85\u5F00\u542F\u8868\u8FBE\u5206\u6790") : "\u8EAB\u4F53\u534F\u8C03\u5DF2\u5173\u95ED \xB7 \u6587\u5B57\u4E0Eemoji\u5206\u6790\u4ECD\u53EF\u4F7F\u7528";
+      summary.textContent = "\u8349\u7A3F\u68C0\u67E5\u4E0E\u8EAB\u4F53\u534F\u8C03 \xB7 " + (s.draftMode?.enabled ? "\u5206\u6790\u5DF2\u542F\u7528" : "\u5206\u6790\u5DF2\u6682\u505C");
       list.replaceChildren();
       const rows = s.draftMode?.history ?? [];
       if (!rows.length) list.append(ui.h("p", "be-muted", "\u6682\u65E0\u8349\u7A3F\u68C0\u67E5\u8BB0\u5F55\u3002"));
-      const labels = { reviewed: "\u5DF2\u5206\u6790", needs_review: "\u5F85\u590D\u6838", unavailable: "\u672A\u5B8C\u6210", cancelled: "\u5DF2\u53D6\u6D88" };
-      for (const r of rows.slice(-5).reverse()) list.append(ui.h("p", "be-muted", new Date(r.at).toLocaleTimeString() + " \xB7 " + (labels[r.status] ?? "\u672A\u5B8C\u6210") + " \xB7 " + (r.changed ? "\u5EFA\u8BAE\u8865\u5145\u8868\u60C5" : "\u4FDD\u7559\u539F\u7A3F") + " \xB7 " + (r.durationMs / 1e3).toFixed(1) + "\u79D2"));
+      const labels = { reviewed: "\u5DF2\u5206\u6790", needs_review: "\u5F85\u590D\u6838", unavailable: "\u672A\u5B8C\u6210", cancelled: "\u5DF2\u53D6\u6D88" }, observations = { not_seen: "\u672A\u89C2\u5BDF\u5230\u63D0\u4EA4", submitted: "\u89C2\u5BDF\u5230\u5339\u914D\u6807\u8BB0\u63D0\u4EA4", different: "\u89C2\u5BDF\u5230\u4E0D\u540C\uFF0F\u591A\u4E2A\u6807\u8BB0", no_metadata: "\u4E8B\u4EF6\u672A\u63D0\u4F9B\u8EAB\u4F53\u6807\u8BB0\uFF0C\u65E0\u6CD5\u786E\u8BA4\u63D0\u4EA4\uFF08\u5185\u8054\u6807\u8BB0\u53EF\u80FD\u672A\u8BB0\u5F55\uFF09", ambiguous: "\u591A\u9879\u540C\u6587\u5EFA\u8BAE\uFF0C\u65E0\u6CD5\u5F52\u5C5E" };
+      for (const r of rows.slice(-5).reverse()) {
+        list.append(ui.h("p", "be-muted", new Date(r.at).toLocaleTimeString() + " \xB7 " + (labels[r.status] ?? "\u672A\u5B8C\u6210") + " \xB7 " + (r.changed ? "\u6709\u8868\u8FBE\u8C03\u6574\u5EFA\u8BAE" : "\u4FDD\u7559\u539F\u7A3F") + " \xB7 " + (r.durationMs / 1e3).toFixed(1) + "\u79D2"));
+        if (r.body) {
+          const face = BODY_EXPRESSIONS[r.body.suggested] ?? "\u65E0";
+          list.append(ui.h("p", "be-muted", "\u8EAB\u4F53\u5EFA\u8BAE\uFF1A" + face + " \xB7 " + r.body.reason), ui.h("p", "be-muted", "\u63D0\u4EA4\uFF1A" + (observations[r.body.observation] ?? "\u65E0\u6CD5\u786E\u8BA4") + (r.body.submitted ? "\uFF08" + r.body.submitted + "\uFF09" : "") + " \xB7 \u52A8\u753B\u663E\u793A\uFF1A\u65E0\u6CD5\u786E\u8BA4"));
+        }
+      }
     } catch {
       summary.textContent = "\u8349\u7A3F\u68C0\u67E5\u8BB0\u5F55\u6682\u4E0D\u53EF\u7528";
     } finally {
       busy = false;
     }
   }
+  toggle.addEventListener("click", () => {
+    toggle.disabled = true;
+    void ctx.invoke("bodyCoordination", [!enabled]).then(() => refresh()).catch(() => {
+      status.textContent = "\u8EAB\u4F53\u534F\u8C03\u8BBE\u7F6E\u672A\u4FDD\u5B58\uFF0C\u8BF7\u91CD\u8BD5\u3002";
+    }).finally(() => toggle.disabled = false);
+  }, { signal });
   void refresh();
   ctx.interval(() => {
     void refresh();
@@ -132,6 +157,12 @@ var styles = `
 .be-library .be-diagnostics{margin-top:24px}.be-library .be-diagnostics p{margin-top:10px}
 @media(max-width:600px){.be-library .be-header{align-items:flex-start;flex-direction:column;gap:12px}.be-library h2{font-size:20px}.be-library .be-search{max-width:none}.be-library .be-tabs{width:100%;justify-content:space-between}.be-library .be-grid{grid-template-columns:1fr}.be-library .be-card{padding:16px}}
 @media(prefers-color-scheme:dark){.be-library{--be-ink:#e2e4f2;--be-muted:#a3a9bf;--be-line:#373b50;--be-surface:#242737;--be-accent:#777eff}.be-library .be-tabs,.be-library .be-badge{background:#303448}.be-library .be-example{background:#303448}.be-library .be-pending{background:#493c28;color:#f3cc82}}
+
+.be-mapping-chain{line-height:1.7;padding:10px 12px;border-radius:10px;background:var(--be-soft,#f3f4ff);overflow-wrap:anywhere}
+.be-emotion-group{border:1px solid #dce0e8;border-radius:10px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+.be-emotion-option{display:inline-flex;align-items:center;gap:4px;font-size:13px}
+.be-emotion-option input{width:auto!important;margin:0}
+.be-form select{max-width:100%;padding:8px;border:1px solid #dce0e8;border-radius:8px}
 `;
 
 // web/guide.ts
@@ -432,6 +463,15 @@ var recordsPanel = { mount(ctx) {
         const head = ui.h("div", "be-card-heading");
         head.append(ui.h("span", "be-muted", new Date(row.at).toLocaleString()), ui.h("span", "be-badge", row.state === "done" ? verdicts[row.analysis.verdict] : states[row.state]));
         card.append(head, ui.h("p", "be-record-text", row.text), ui.h("p", "be-muted", "\u5B9E\u9645\u8868\u60C5\uFF1A" + (row.emoji.length ? row.emoji.join(" ") : "\u672A\u4F7F\u7528")));
+        const bodyVerdicts = { compatible: "\u57FA\u672C\u534F\u8C03", conflict: "\u53EF\u80FD\u51B2\u7A81", uncertain: "\u65E0\u6CD5\u786E\u8BA4", absent: "\u6CA1\u6709" };
+        const hasBody = !!row.bodyEvidence?.expressions.length;
+        const bodyPanel = ui.h("details", "be-edit");
+        bodyPanel.append(ui.h("summary", null, "\u8EAB\u4F53\u5FC3\u60C5\u5206\u6790 \xB7 " + (!hasBody ? "\u6CA1\u6709" : row.bodyAnalysis ? bodyVerdicts[row.bodyAnalysis.expression.verdict] : "\u5F85\u5206\u6790")));
+        bodyPanel.append(ui.h("p", "be-muted", "\u8EAB\u4F53\u5FC3\u60C5\u8BB0\u5F55\uFF1A" + (hasBody ? row.bodyEvidence.expressions.map((x) => BODY_EXPRESSIONS[x] ?? x).join("\u3001") : "\u6CA1\u6709")), ui.h("p", "be-muted", "\u4EC5\u6309\u672C\u6761\u8BB0\u5F55\u4E2D\u7684\u8EAB\u4F53\u5FC3\u60C5\u4FE1\u606F\u5206\u6790\uFF0C\u4E0D\u4EE3\u8868\u5F53\u524D\u8EAB\u4F53\u72B6\u6001\u3002"));
+        if (hasBody && row.bodyAnalysis) {
+          bodyPanel.append(ui.h("p", null, "\u8EAB\u4F53\u5FC3\u60C5\u5339\u914D\uFF1A" + bodyVerdicts[row.bodyAnalysis.expression.verdict]), ui.h("p", "be-muted", row.bodyAnalysis.expression.explanation));
+        }
+        card.append(bodyPanel);
         if (row.diagnostics) card.append(ui.h("p", "be-muted", "\u5206\u6790\u6B21\u6570\uFF1A" + row.diagnostics.attempts + (row.diagnostics.durationMs !== void 0 ? " \xB7 \u8017\u65F6 " + (row.diagnostics.durationMs / 1e3).toFixed(1) + " \u79D2" : "") + (row.diagnostics.errorCode ? " \xB7 \u539F\u56E0\uFF1A" + row.diagnostics.errorCode : "")));
         if (row.hint) {
           const labels = { queued: "\u7B49\u5F85\u6B63\u5E38\u5BF9\u8BDD", rendered: "\u5DF2\u6210\u6587\uFF0C\u5F85\u5BBF\u4E3B\u786E\u8BA4", delivered: "\u5BBF\u4E3B\u5DF2\u786E\u8BA4\u9001\u8FBE", discarded: "\u5DF2\u4E22\u5F03", expired: "\u5DF2\u8FC7\u671F", cancelled: "\u5DF2\u53D6\u6D88", skipped: "\u672A\u6392\u961F" };
@@ -569,7 +609,7 @@ var bundle = { panels: { guide: guidePanel, records: recordsPanel, library: { mo
   const page = ui.h("div", "be-page");
   root.append(page);
   const header = ui.h("div", "be-header"), intro = ui.h("div");
-  intro.append(ui.h("h2", null, "\u7ED9\u5FC3\u60C5\u52A0\u4E00\u4E2A\u8868\u60C5"), ui.h("p", "be-muted", "\u76F4\u63A5\u7528\u4E8E\u539F\u7248\u684C\u5BA0\u6C14\u6CE1\uFF0C\u65E0\u9700\u4FEE\u6539\u4E3B\u7A0B\u5E8F\u3002"));
+  intro.append(ui.h("h2", null, "\u7ED9\u5FC3\u60C5\u52A0\u4E00\u4E2A\u8868\u60C5"), ui.h("p", "be-muted", "\u76F4\u63A5\u7528\u4E8E\u539F\u7248\u684C\u5BA0\u6C14\u6CE1\u3002\u8EAB\u4F53\u6620\u5C04\u9762\u5411\u5185\u7F6E19\u79CD\u8868\u60C5\uFF0C\u4EC5\u4F9B\u53C2\u8003\uFF0C\u4E0D\u81EA\u52A8\u6267\u884C\u52A8\u4F5C\u3002"));
   header.append(intro);
   page.append(header);
   const habit = ui.h("p", "be-habit", "\u56DE\u5E94\u65B9\u5F0F\u7531\u4E3B\u7A0B\u5E8F\u300C\u4E60\u60EF\u300D\u7BA1\u7406\u3002");
@@ -645,9 +685,25 @@ var bundle = { panels: { guide: guidePanel, records: recordsPanel, library: { mo
     if (signal.aborted) return;
     list.replaceChildren();
     for (const e of entries.filter((e2) => e2.kind === "emoji")) {
+      let emotionChecks2 = function(title2, values) {
+        const group = ui.h("fieldset", "be-emotion-group"), legend = ui.h("legend", null, title2);
+        group.append(legend);
+        const checks = /* @__PURE__ */ new Map();
+        for (const emotion of EMOTIONS) {
+          const label = ui.h("label", "be-emotion-option"), input = ui.h("input");
+          input.type = "checkbox";
+          input.checked = values.includes(emotion);
+          input.value = emotion;
+          label.append(input, ui.h("span", null, EMOTION_LABELS[emotion] ?? emotion));
+          group.append(label);
+          checks.set(emotion, input);
+        }
+        return { group, values: () => [...checks].filter(([, input]) => input.checked).map(([emotion]) => emotion) };
+      };
+      var emotionChecks = emotionChecks2;
       const row = ui.h("section", "be-card");
       row.dataset.id = e.id;
-      row.dataset.search = [e.id, e.description, e.usage, ...e.aliases ?? [], ...e.emotions].join(" ").toLowerCase();
+      row.dataset.search = [e.id, e.description, e.usage, ...e.aliases ?? [], ...e.emotions, ...e.emotions.map((x) => EMOTION_LABELS[x]), e.bodyMatch ? BODY_MATCH_LABELS[e.bodyMatch] : "", BODY_EXPRESSIONS[e.bodyExpression] ?? ""].join(" ").toLowerCase();
       const visual = ui.h("div", "be-visual", e.text), heading = ui.h("div", "be-card-heading"), title = ui.h("h3", null, e.aliases?.[0] || e.id), badge = ui.h("span", "be-badge", !e.reviewed ? "\u672A\u786E\u8BA4" : e.enabled ? "\u5DF2\u542F\u7528" : "\u5DF2\u505C\u7528");
       heading.append(title, badge);
       const meaning = ui.h("p", "be-meaning", e.usage ?? e.description), actions = ui.h("div", "be-actions"), toggle = ui.button(e.enabled ? "\u505C\u7528" : "\u542F\u7528");
@@ -660,9 +716,13 @@ var bundle = { panels: { guide: guidePanel, records: recordsPanel, library: { mo
         });
       }, { signal });
       actions.append(toggle);
+      const mapping = ui.h("p", "be-muted", (e.bodyMatch ? BODY_MATCH_LABELS[e.bodyMatch] : "\u672A\u5206\u7C7B") + " \xB7 " + (e.bodyExpression ? BODY_EXPRESSIONS[e.bodyExpression] ?? "\u975E\u5185\u7F6E\u8868\u60C5" : "\u4E0D\u6307\u5B9A\u8EAB\u4F53\u8868\u60C5"));
+      mapping.dataset.bodyMatch = e.bodyMatch ?? "unknown";
+      mapping.title = e.bodyMatchReason ?? "\u65E7\u81EA\u5B9A\u4E49\u6620\u5C04\u5C1A\u672A\u5206\u7C7B";
       const details = ui.h("details", "be-edit");
       details.append(ui.h("summary", null, "\u4F7F\u7528\u8BF4\u660E\u4E0E\u7F16\u8F91"));
       const form = ui.h("form", "be-form");
+      if (e.bodyMatchReason) form.append(ui.h("p", "be-muted", "\u6620\u5C04\u8BF4\u660E\uFF1A" + e.bodyMatchReason));
       if (e.example) form.append(ui.h("p", "be-example", "\u4F8B\u5982\uFF1A" + e.example));
       if (e.avoid?.length) form.append(ui.h("p", "be-muted", "\u4E0D\u9002\u5408\uFF1A" + e.avoid.join(" ")));
       const name = ui.h("input");
@@ -691,7 +751,69 @@ var bundle = { panels: { guide: guidePanel, records: recordsPanel, library: { mo
           save.disabled = false;
         });
       }, { signal });
-      row.append(visual, heading, meaning, actions, details);
+      const chain = ui.h("p", "be-mapping-chain", e.emotions.map((x) => EMOTION_LABELS[x] ?? x).join("\u3001") + " \u2192 " + e.text + " \u2192 " + (e.bodyExpression ? BODY_EXPRESSIONS[e.bodyExpression] : "\u4E0D\u6307\u5B9A\u8EAB\u4F53\u5FC3\u60C5"));
+      const mappingEdit = ui.h("details", "be-edit");
+      mappingEdit.append(ui.h("summary", null, "\u7F16\u8F91\u6620\u5C04"));
+      const mappingForm = ui.h("form", "be-form");
+      const allowed = emotionChecks2("\u9002\u7528\u60C5\u7EEA\uFF08\u81F3\u5C11\u9009\u4E00\u9879\uFF09", e.emotions), forbidden = emotionChecks2("\u7981\u7528\u60C5\u7EEA\uFF08\u4F18\u5148\u4E8E\u9002\u7528\u60C5\u7EEA\uFF09", e.forbidden);
+      const target = ui.h("select");
+      target.setAttribute("aria-label", "\u8EAB\u4F53\u5FC3\u60C5");
+      for (const [value, label] of [["", "\u4E0D\u6307\u5B9A\u8EAB\u4F53\u5FC3\u60C5"], ...Object.entries(BODY_EXPRESSIONS)]) {
+        const option = ui.h("option", null, label);
+        option.value = value;
+        target.append(option);
+      }
+      target.value = e.bodyExpression ?? "";
+      const match = ui.h("select");
+      match.setAttribute("aria-label", "\u5BF9\u5E94\u7A0B\u5EA6");
+      for (const [value, label] of Object.entries(BODY_MATCH_LABELS)) {
+        const option = ui.h("option", null, label);
+        option.value = value;
+        match.append(option);
+      }
+      match.value = e.bodyMatch ?? (target.value ? "approximate" : "none");
+      const reason = ui.h("textarea");
+      reason.rows = 2;
+      reason.maxLength = 500;
+      reason.required = true;
+      reason.value = e.bodyMatchReason ?? "\u7528\u6237\u81EA\u5B9A\u4E49\u6620\u5C04\uFF0C\u8BF7\u7ED3\u5408\u8BED\u5883\u4F7F\u7528\u3002";
+      const sync = () => {
+        if (!target.value) {
+          match.value = "none";
+          match.disabled = true;
+        } else {
+          match.disabled = false;
+          if (match.value === "none") match.value = "approximate";
+        }
+      };
+      target.addEventListener("change", sync, { signal });
+      sync();
+      const mappingSave = ui.button("\u4FDD\u5B58\u6620\u5C04", { variant: "primary" });
+      mappingSave.type = "submit";
+      mappingForm.append(allowed.group, forbidden.group, field("\u8EAB\u4F53\u5FC3\u60C5", target), field("\u5BF9\u5E94\u7A0B\u5EA6", match), field("\u6620\u5C04\u8BF4\u660E", reason), ui.h("p", "be-muted", "\u81EA\u5B9A\u4E49\u8EAB\u4F53\u6620\u5C04\u7528\u4E8E\u5EFA\u8BAE\uFF0C\u4E0D\u4FDD\u8BC1\u81EA\u52A8\u64AD\u653E\uFF1B\u7981\u7528\u60C5\u7EEA\u4F18\u5148\u3002"), mappingSave);
+      mappingForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const emotions2 = allowed.values(), blocked = forbidden.values();
+        if (!emotions2.length) {
+          notify("\u8BF7\u81F3\u5C11\u9009\u62E9\u4E00\u79CD\u9002\u7528\u60C5\u7EEA", true);
+          return;
+        }
+        if (emotions2.some((x) => blocked.includes(x))) {
+          notify("\u540C\u4E00\u60C5\u7EEA\u4E0D\u80FD\u540C\u65F6\u8BBE\u4E3A\u9002\u7528\u548C\u7981\u7528", true);
+          return;
+        }
+        if (target.value && match.value === "none") {
+          notify("\u8BF7\u9009\u62E9\u76F4\u63A5\u6216\u8FD1\u4F3C\u5BF9\u5E94\uFF0C\u6216\u53D6\u6D88\u8EAB\u4F53\u5FC3\u60C5", true);
+          return;
+        }
+        if (!mappingForm.reportValidity()) return;
+        mappingSave.disabled = true;
+        void update(e.id, { emotions: emotions2, forbidden: blocked, bodyExpression: target.value || void 0, bodyMatch: target.value ? match.value : "none", bodyMatchReason: reason.value.trim() }).then(() => notify("\u6620\u5C04\u5DF2\u4FDD\u5B58\uFF0C\u540E\u7EED\u641C\u7D22\u548C\u8349\u7A3F\u68C0\u67E5\u5C06\u4F7F\u7528\u65B0\u6620\u5C04")).catch(fail).finally(() => {
+          mappingSave.disabled = false;
+        });
+      }, { signal });
+      mappingEdit.append(mappingForm);
+      row.append(visual, heading, meaning, chain, mapping, actions, mappingEdit, details);
       list.append(row);
     }
     filterRows();

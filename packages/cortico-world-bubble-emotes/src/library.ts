@@ -1,3 +1,4 @@
+import {BODY_EXPRESSIONS,type BodyMatch} from './body-mapping.ts';
 import {isEmojiContent} from './emoji.ts';
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync, copyFileSync, openSync, closeSync, unlinkSync } from 'node:fs';
@@ -8,7 +9,7 @@ export {EMOTIONS} from './catalog.ts';
 export type Emotion = typeof EMOTIONS[number];
 export interface Emote {
   id: string; kind: 'emoji' | 'sticker'; text?: string; file?: string; sha256?: string;
-  unicodeName?: string; bodyExpression?: string; usage?: string; avoid?: string[]; example?: string; aliases?: string[];
+  unicodeName?: string; bodyExpression?: string; bodyMatch?:BodyMatch; bodyMatchReason?:string; usage?: string; avoid?: string[]; example?: string; aliases?: string[];
   description: string; emotions: Emotion[]; intensity: number; forbidden: Emotion[];
   reviewed: boolean; enabled: boolean; source: string; license: string;
 }
@@ -25,6 +26,7 @@ export function validateEmote(raw: unknown): Emote {
   if (!Array.isArray(r.emotions) || !r.emotions.length || !Array.isArray(r.forbidden)) throw new Error('Missing emotion labels.');
   for(const key of ['unicodeName','bodyExpression','usage','example'] as const) if(r[key]!==undefined && (typeof r[key]!=='string'||r[key]!.length>500)) throw new Error('Invalid usage metadata.');
   for(const key of ['avoid','aliases'] as const) if(r[key]!==undefined && (!Array.isArray(r[key])||r[key]!.length>20||r[key]!.some(v=>typeof v!=='string'||v.length>500))) throw new Error('Invalid usage labels.');
+  if(r.bodyMatch!==undefined){if(!['direct','approximate','none'].includes(r.bodyMatch)||typeof r.bodyMatchReason!=='string'||!r.bodyMatchReason.trim()||r.bodyMatchReason.length>500)throw Error('Invalid body mapping.');if(r.bodyMatch==='none'?r.bodyExpression!==undefined:!Object.hasOwn(BODY_EXPRESSIONS,r.bodyExpression??''))throw Error('Body mapping must use one of the 19 built-in expressions.');}
   r.emotions.forEach(asEmotion); r.forbidden.forEach(asEmotion);
   if (!Number.isFinite(r.intensity) || r.intensity < 0 || r.intensity > 1 || typeof r.reviewed !== 'boolean' || typeof r.enabled !== 'boolean') throw new Error('Invalid intensity or review state.');
   if (typeof r.source !== 'string' || !r.source.trim() || r.source.length>2000 || typeof r.license !== 'string' || !r.license.trim() || r.license.length>2000) throw new Error('Source and license required.');
@@ -48,13 +50,25 @@ export class EmoteLibrary {
         const old=this.data.emotes.find(e=>e.id==='comfort'&&e.kind==='emoji'&&e.text==='🫂'&&['Unicode','https://www.unicode.org/emoji/charts/emoji-list.html'].includes(e.source)&&(e.unicodeName==='people hugging'||(!e.unicodeName&&['people hugging','A supportive hug, without celebration'].includes(e.description))));
         if(old){old.text='💙';if(old.description==='people hugging')old.description='blue heart';old.unicodeName='blue heart';if(JSON.stringify(old.aliases)===JSON.stringify(['安慰','拥抱','陪伴']))old.aliases=['安慰','支持','陪伴'];}
       }
+      if((raw.catalogVersion??0)<5){
+        const previous:Record<string,{text:string;bodyMatch:string;bodyExpression:string|null;bodyMatchReason:string}>={"apology": {"text": "🙇", "bodyMatch": "approximate", "bodyExpression": "neutral", "bodyMatchReason": "没有歉意脸，采用平静降级；抱歉不必然难过，鞠躬属于另行判断的动作。"}, "gratitude": {"text": "🙏", "bodyMatch": "approximate", "bodyExpression": "neutral", "bodyMatchReason": "感谢无专属身体表情，平静仅作为克制降级。"}, "disgust": {"text": "🤢", "bodyMatch": "none", "bodyExpression": null, "bodyMatchReason": "内置19种表情没有恶心、反胃；不再强配担心，不要求改变身体表情。"}, "ill": {"text": "🤒", "bodyMatch": "none", "bodyExpression": null, "bodyMatchReason": "内置19种表情没有生病、发烧；不再强配担心，不要求改变身体表情。"}};
+        for(const entry of this.data.emotes){const prior=previous[entry.id],seed=defaults.find(e=>e.id===entry.id);if(prior&&seed&&entry.text===prior.text&&['Unicode','https://www.unicode.org/emoji/charts/emoji-list.html'].includes(entry.source)&&entry.bodyMatch===prior.bodyMatch&&(entry.bodyExpression??null)===prior.bodyExpression&&entry.bodyMatchReason===prior.bodyMatchReason){entry.bodyMatch=seed.bodyMatch;entry.bodyExpression=seed.bodyExpression;entry.bodyMatchReason=seed.bodyMatchReason;}}
+      }
       if((raw.catalogVersion??0)<CATALOG_VERSION) {
         for(const seed of defaults) {
           const old=this.data.emotes.find(e=>e.id===seed.id);
           if(!old) this.data.emotes.push(structuredClone(seed));
-          else for(const key of ['unicodeName','bodyExpression','usage','avoid','example','aliases'] as const) {
+          else {
+            if(old.bodyMatch===undefined){
+              const legacy=({apology:'sad',gratitude:'neutral',disgust:'worried',ill:'worried'} as Record<string,string>)[seed.id]??seed.bodyExpression;
+              const standard=['Unicode','https://www.unicode.org/emoji/charts/emoji-list.html'].includes(old.source)&&old.text===seed.text&&(old.bodyExpression===undefined||old.bodyExpression===legacy);
+              if(standard){old.bodyMatch=seed.bodyMatch;old.bodyMatchReason=seed.bodyMatchReason;old.bodyExpression=seed.bodyExpression;}
+              else if(old.bodyExpression&&Object.hasOwn(BODY_EXPRESSIONS,old.bodyExpression)){old.bodyMatch='approximate';old.bodyMatchReason='保留原有身体表情映射；自定义素材或映射尚未确认语义，请结合语境复核。';}
+            }
+            for(const key of ['unicodeName','usage','avoid','example','aliases'] as const) {
             if(old[key]===undefined) Object.assign(old,{[key]:structuredClone(seed[key])});
           }
+        }
         }
         this.data.catalogVersion=CATALOG_VERSION;this.save();
       }

@@ -1,5 +1,5 @@
 import type { Emote } from './library.ts';
-export const CATALOG_VERSION=3;
+export const CATALOG_VERSION=5;
 export const EMOTIONS=["neutral","calm","joy","amusement","excitement","celebration","affection","playfulness","shyness","embarrassment","surprise","thinking","confusion","skepticism","worry","fear","sadness","grief","disappointment","comfort","apology","anger","frustration","determination","pride","gratitude","tiredness","sleepy","disgust","illness"] as const;
 export const DEFAULT_EMOTES:Emote[]=[
   {
@@ -26,7 +26,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "中性",
       "面无表情"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "无明显情绪，与平静身体表情对应。"
   },
   {
     "id": "calm",
@@ -53,7 +55,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "平静",
       "放松",
       "安心"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "放松舒适比平静更具体；平静是温和降级，不保证闭眼微笑。"
   },
   {
     "id": "gentle-smile",
@@ -84,7 +88,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "微笑",
       "友好"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "轻微笑意可参考开心，但身体开心表现可能更强。"
   },
   {
     "id": "joy",
@@ -115,7 +121,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "开心",
       "高兴"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "明确开心，与开心身体表情对应。"
   },
   {
     "id": "grin",
@@ -146,7 +154,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "大笑",
       "笑容"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "开心方向一致，没有专属大笑身体表情。"
   },
   {
     "id": "laughing",
@@ -177,7 +187,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "笑哭",
       "好笑"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "开心方向一致，没有笑哭表情；不能用大哭代替。"
   },
   {
     "id": "excited",
@@ -209,7 +221,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "兴奋",
       "激动",
       "期待"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "星星眼、期待与对应身体表情一致，不要求额外跳动。"
   },
   {
     "id": "celebrate",
@@ -240,7 +254,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "庆祝",
       "生日"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "庆祝可借用期待和兴奋感，没有专属庆祝身体表情。"
   },
   {
     "id": "love",
@@ -267,7 +283,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "喜欢",
       "喜爱",
       "爱心"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "喜爱与爱心身体表情对应。"
   },
   {
     "id": "heart-eyes",
@@ -293,7 +311,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "心动",
       "喜爱"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "心动、爱心眼与爱心身体表情对应。"
   },
   {
     "id": "wink",
@@ -319,7 +339,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "眨眼",
       "俏皮"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "眨眼含义与身体表情对应。"
   },
   {
     "id": "shy",
@@ -345,7 +367,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "害羞",
       "羞涩"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "害羞、脸红与身体表情对应。"
   },
   {
     "id": "embarrassed",
@@ -372,7 +396,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "尴尬",
       "慌乱",
       "脸红"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "尴尬可借用窘迫，但不一定慌张；按语境判断。"
   },
   {
     "id": "awkward",
@@ -398,7 +424,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "汗",
       "不好意思"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "尴尬汗笑与窘迫接近，不代表恐慌。"
   },
   {
     "id": "surprise",
@@ -424,7 +452,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "惊讶",
       "意外"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "惊讶与身体表情对应。"
   },
   {
     "id": "astonished",
@@ -450,7 +480,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "震惊",
       "吃惊"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "震惊更强烈，身体只有通用惊讶，无法精确体现强度。"
   },
   {
     "id": "thinking",
@@ -476,7 +508,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "思考",
       "考虑"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "思考与身体表情对应。"
   },
   {
     "id": "confused",
@@ -503,7 +537,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "困惑",
       "疑惑",
       "不解"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "疑惑与问号身体表情对应。"
   },
   {
     "id": "skeptical",
@@ -529,7 +565,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "怀疑",
       "质疑"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "怀疑可借用审慎思考，没有专属挑眉质疑身体表情。"
   },
   {
     "id": "worried",
@@ -555,7 +593,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "担心",
       "忧虑"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "担心与身体表情对应。"
   },
   {
     "id": "fear",
@@ -584,7 +624,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "害怕",
       "恐惧"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "害怕与身体表情对应。"
   },
   {
     "id": "terrified",
@@ -613,7 +655,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "惊恐",
       "吓坏"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "惊恐强度更高，身体只有通用害怕；不自动强加动作。"
   },
   {
     "id": "sadness",
@@ -643,7 +687,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "悲伤",
       "伤心",
       "难过"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "悲伤方向一致，但身体难过不等于emoji中的单滴眼泪。"
   },
   {
     "id": "cry",
@@ -673,7 +719,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "哭泣",
       "大哭",
       "悲痛"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "强烈哭泣与大哭身体表情对应，不能用于笑哭。"
   },
   {
     "id": "disappointed",
@@ -699,7 +747,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "失望",
       "失落"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "失望可借用较弱的难过，不必哭泣。"
   },
   {
     "id": "comfort",
@@ -726,7 +776,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "安慰",
       "支持",
       "陪伴"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "安慰是支持和陪伴，不是开心或悲伤；平静仅作为温和降级。"
   },
   {
     "id": "apology",
@@ -743,7 +795,7 @@ export const DEFAULT_EMOTES:Emote[]=[
     "source": "https://www.unicode.org/emoji/charts/emoji-list.html",
     "license": "Unicode character (system font rendering; no vendor artwork)",
     "unicodeName": "person bowing",
-    "bodyExpression": "sad",
+    "bodyExpression": "flustered",
     "usage": "认真道歉、认错、尊重。",
     "avoid": [
       "不嬉笑带过，不用道歉向他人施压。"
@@ -753,7 +805,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "抱歉",
       "道歉",
       "认错"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "按用户指定借用慌张／窘表达抱歉时的局促，不表示所有道歉都慌张。"
   },
   {
     "id": "anger",
@@ -782,7 +836,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "生气",
       "愤怒"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "生气与身体表情对应。"
   },
   {
     "id": "furious",
@@ -811,7 +867,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "暴怒",
       "恼火"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "暴怒更强，身体通用生气不能区分所有强度。"
   },
   {
     "id": "pout",
@@ -838,7 +896,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "气鼓鼓",
       "委屈",
       "受挫"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "气鼓鼓可借用嘟嘴，不等于生气喷气的完整视觉表现。"
   },
   {
     "id": "determined",
@@ -865,7 +925,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "坚定",
       "决心",
       "加油"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "坚定、努力的语义与认真坚定身体表情对应，不是肌肉姿势复刻。"
   },
   {
     "id": "proud",
@@ -896,7 +958,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "得意",
       "自信"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "得意方向一致，没有墨镜或专属自信表情；避免不合语境的嘚瑟。"
   },
   {
     "id": "gratitude",
@@ -913,7 +977,7 @@ export const DEFAULT_EMOTES:Emote[]=[
     "source": "https://www.unicode.org/emoji/charts/emoji-list.html",
     "license": "Unicode character (system font rendering; no vendor artwork)",
     "unicodeName": "folded hands",
-    "bodyExpression": "neutral",
+    "bodyExpression": "excited",
     "usage": "感谢、恳请、祝愿，依上下文区分。",
     "avoid": [
       "不要自动假设宗教信仰，不用来催促回报。"
@@ -922,7 +986,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "感谢",
       "谢谢"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "按用户指定借用期待／星星眼表达感谢时的欣喜，不表示索取或期待回报。"
   },
   {
     "id": "tired",
@@ -949,7 +1015,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "困倦",
       "困",
       "疲倦"
-    ]
+    ],
+    "bodyMatch": "direct",
+    "bodyMatchReason": "打哈欠、犯困与身体犯困表情对应。"
   },
   {
     "id": "sleepy",
@@ -976,7 +1044,9 @@ export const DEFAULT_EMOTES:Emote[]=[
       "睡觉",
       "睡着",
       "晚安"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "睡眠emoji只降级为犯困脸，不执行sleep睡觉动作或自动改变作息。"
   },
   {
     "id": "disgust",
@@ -993,7 +1063,6 @@ export const DEFAULT_EMOTES:Emote[]=[
     "source": "https://www.unicode.org/emoji/charts/emoji-list.html",
     "license": "Unicode character (system font rendering; no vendor artwork)",
     "unicodeName": "nauseated face",
-    "bodyExpression": "worried",
     "usage": "恶心、不适、反感；身体仅近似表达不适。",
     "avoid": [
       "不用于评价人的外貌、身份或脆弱处境。"
@@ -1003,7 +1072,10 @@ export const DEFAULT_EMOTES:Emote[]=[
       "恶心",
       "反感",
       "不适"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "按用户指定借用害怕／吓到表达恶心时的退缩反应；两种情绪并不等同。",
+    "bodyExpression": "scared"
   },
   {
     "id": "ill",
@@ -1020,7 +1092,6 @@ export const DEFAULT_EMOTES:Emote[]=[
     "source": "https://www.unicode.org/emoji/charts/emoji-list.html",
     "license": "Unicode character (system font rendering; no vendor artwork)",
     "unicodeName": "face with thermometer",
-    "bodyExpression": "worried",
     "usage": "身体不舒服、发热的比喻或自述。",
     "avoid": [
       "不据此作诊断，不暗示桌宠真的患病。"
@@ -1029,6 +1100,9 @@ export const DEFAULT_EMOTES:Emote[]=[
     "aliases": [
       "生病",
       "发热"
-    ]
+    ],
+    "bodyMatch": "approximate",
+    "bodyMatchReason": "按用户指定借用犯困表达生病时的疲惫，不诊断病情，不执行睡觉动作。",
+    "bodyExpression": "sleepy"
   }
 ];

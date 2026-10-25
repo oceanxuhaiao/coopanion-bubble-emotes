@@ -5,7 +5,7 @@ const describeTools=(decls:readonly ToolSpec[],summaries:Readonly<Record<string,
 import { BUBBLE_EMOTES_DEFAULTS, type BubbleEmotesConfigSection } from './config.ts';
 import { BubbleEmotesWorld, BUBBLE_EMOTES_TOOL_DECLS } from './world.ts';
 export const BUBBLE_EMOTES: WorldDefinition<BubbleEmotesConfigSection> = {
-  id:'bubble-emotes',label:'表情',defaults:()=>({...BUBBLE_EMOTES_DEFAULTS}),
+  id:'bubble-emotes',label:'表达助手 · 情绪与表情',defaults:()=>({...BUBBLE_EMOTES_DEFAULTS}),
   create:(ctx)=>new BubbleEmotesWorld(ctx.dataDir,{secret:name=>ctx.secret(name),storeSecret:(name,value)=>ctx.storeSecret(name,value)}),
   describe:{tools:describeTools(BUBBLE_EMOTES_TOOL_DECLS,{
     bubble_emotes_search:{zh:'按表达意图检索已审核的表情。',en:'Searches reviewed emotes by intended meaning.'},

@@ -123,7 +123,7 @@
     },
     {
       "name": "bubble_emotes_review_draft",
-      "description": "Pre-send draft review, enabled with configured expression analysis. Submit exact draft and short current context, read advisory result, then independently decide on one native pet_say.script. This tool sends nothing and never intercepts pet_say. Never blindly copy advice: neutral/missing conflicts, uncertainty or failed checks should preserve the draft or be reconsidered. Do not review indefinitely or repeat sent replies.",
+      "description": "Pre-send draft review, enabled with configured expression analysis. Submit exact draft and short current context. The result includes independently switchable body-expression advice; unknown posture/quiet/unsupported figure blocks marker insertion. No motion or display guarantees. Read advisory result, then independently decide on one native pet_say.script. This tool sends nothing and never intercepts pet_say. Never blindly copy advice: neutral/missing conflicts, uncertainty or failed checks should preserve the draft or be reconsidered. Do not review indefinitely or repeat sent replies.",
       "parameters": {
         "type": "object",
         "properties": {
