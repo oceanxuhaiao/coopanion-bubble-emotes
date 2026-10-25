@@ -1,8 +1,8 @@
 {
   "name": "cortico-world-bubble-emotes",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "type": "module",
-  "description": "让开心有笑意，安慰有温度。37个emoji搭配情绪分析与草稿检查，新增可编辑的“情绪→表情→身体心情”映射和身体心情建议；不自动安排动作，减少对睡眠与互动的干扰。适配Coopanion 0.2.8；分析需配置模型。",
+  "description": "让开心有笑意，安慰有温度。37个emoji搭配情绪分析与草稿检查，新增可编辑的“情绪→表情→身体心情”映射和身体心情建议；不自动安排动作，减少对睡眠与互动的干扰。分析需配置模型。",
   "license": "AGPL-3.0-or-later",
   "main": "./dist/index.js",
   "engines": {
@@ -37,11 +37,11 @@
     "locales": {
       "zh": {
         "displayName": "表达助手 · 情绪与表情",
-        "description": "让开心有笑意，安慰有温度。37个emoji搭配情绪分析与草稿检查，新增可编辑的“情绪→表情→身体心情”映射和身体心情建议；不自动安排动作，减少对睡眠与互动的干扰。适配Coopanion 0.2.8；分析需配置模型。"
+        "description": "让开心有笑意，安慰有温度。37个emoji搭配情绪分析与草稿检查，新增可编辑的“情绪→表情→身体心情”映射和身体心情建议；不自动安排动作，减少对睡眠与互动的干扰。分析需配置模型。"
       },
       "en": {
         "displayName": "表达助手 · 情绪与表情",
-        "description": "Help your pet express joy, comfort and thought with 37 emoji, emotion analysis, draft review and editable body-expression mappings. For Coopanion 0.2.8; analysis requires a configured model."
+        "description": "Help your pet express joy, comfort and thought with 37 emoji, emotion analysis, draft review and editable body-expression mappings. Analysis requires a configured model."
       }
     },
     "icon": "assets/icon.svg"
