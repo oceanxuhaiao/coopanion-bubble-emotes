@@ -8,106 +8,43 @@ var EMOTION_LABELS = { neutral: "\u4E2D\u6027", calm: "\u5E73\u9759\u3001\u653E\
 var BODY_EXPRESSIONS = { neutral: "\u5E73\u9759", happy: "\u5F00\u5FC3", wink: "\u7728\u773C", love: "\u559C\u6B22\uFF0F\u7231\u5FC3", shy: "\u5BB3\u7F9E", surprised: "\u60CA\u8BB6", angry: "\u751F\u6C14", sad: "\u96BE\u8FC7", sleepy: "\u72AF\u56F0", thinking: "\u601D\u8003", smug: "\u5F97\u610F", pout: "\u561F\u5634", worried: "\u62C5\u5FC3", determined: "\u8BA4\u771F\uFF0F\u575A\u5B9A", flustered: "\u614C\u5F20\uFF0F\u7A98", scared: "\u5BB3\u6015", excited: "\u671F\u5F85\uFF0F\u661F\u661F\u773C", cry: "\u5927\u54ED", confused: "\u7591\u60D1" };
 var BODY_MATCH_LABELS = { direct: "\u76F4\u63A5\u5BF9\u5E94", approximate: "\u8FD1\u4F3C\u5BF9\u5E94", none: "\u65E0\u5408\u9002\u5BF9\u5E94" };
 
-// web/draft-status.ts
-function mountDraftStatus(ctx, parent) {
-  const { ui, signal } = ctx, box = ui.h("details", "be-card"), summary = ui.h("summary", null, "\u8349\u7A3F\u68C0\u67E5\u8BB0\u5F55");
-  box.append(summary, ui.h("p", "be-muted", "\u8349\u7A3F\u68C0\u67E5\u968F\u8868\u8FBE\u5206\u6790\u542F\u505C\u3002\u8EAB\u4F53\u534F\u8C03\u53EF\u5355\u72EC\u5173\u95ED\uFF0C\u4EC5\u4F7F\u7528\u5185\u7F6E19\u79CD\u8EAB\u4F53\u8868\u60C5\uFF0C\u4E0D\u5B89\u6392\u8DF3\u821E\u3001\u8DD1\u52A8\u6216\u7761\u89C9\u3002\u516C\u5F00\u63A5\u53E3\u65E0\u6CD5\u786E\u8BA4\u5B9E\u65F6\u8EAB\u4F53\u72B6\u6001\u65F6\u4EC5\u7ED9\u5EFA\u8BAE\u3001\u4E0D\u8FFD\u52A0\u6807\u8BB0\uFF1B\u4E0D\u4FDD\u8BC1\u6BCF\u6B21\u68C0\u67E5\u6216\u663E\u793A\u6210\u529F\u3002"));
-  const toggle = ui.button("\u6B63\u5728\u8BFB\u53D6\u8EAB\u4F53\u534F\u8C03\u8BBE\u7F6E"), status = ui.h("p", "be-muted"), list = ui.h("div");
-  box.append(toggle, status, list);
+// web/draft-settings.ts
+function mountDraftSettings(ctx, parent) {
+  const { ui, signal } = ctx, box = ui.h("details", "be-diagnostics");
+  box.append(ui.h("summary", null, "\u8349\u7A3F\u4E0E\u8EAB\u4F53\u8BBE\u7F6E"));
+  const status = ui.h("p", "be-muted"), message = ui.h("p", "be-message"), toggle = ui.button("\u8BFB\u53D6\u8349\u7A3F\u68C0\u67E5\u8BBE\u7F6E"), body = ui.button("\u8BFB\u53D6\u8EAB\u4F53\u534F\u8C03\u8BBE\u7F6E");
+  message.setAttribute("role", "status");
+  box.append(status, toggle, body, message);
   parent.append(box);
-  let busy = false, enabled = false;
+  let enabled = false, bodyEnabled = false;
+  const fail = (e) => {
+    message.textContent = String(e.message ?? e);
+  };
   async function refresh() {
-    if (busy || signal.aborted) return;
-    busy = true;
-    try {
-      const s = await ctx.invoke("state");
-      if (signal.aborted) return;
-      enabled = s.bodyCoordination?.enabled ?? false;
-      toggle.textContent = enabled ? "\u5173\u95ED\u8EAB\u4F53\u534F\u8C03" : "\u5F00\u542F\u8EAB\u4F53\u534F\u8C03";
-      status.textContent = enabled ? "\u8EAB\u4F53\u534F\u8C03\u5DF2\u5F00\u542F \xB7 " + (s.draftMode?.enabled ? "\u968F\u8349\u7A3F\u68C0\u67E5\u63D0\u4F9B\u5EFA\u8BAE" : "\u7B49\u5F85\u5F00\u542F\u8868\u8FBE\u5206\u6790") : "\u8EAB\u4F53\u534F\u8C03\u5DF2\u5173\u95ED \xB7 \u6587\u5B57\u4E0Eemoji\u5206\u6790\u4ECD\u53EF\u4F7F\u7528";
-      summary.textContent = "\u8349\u7A3F\u68C0\u67E5\u4E0E\u8EAB\u4F53\u534F\u8C03 \xB7 " + (s.draftMode?.enabled ? "\u5206\u6790\u5DF2\u542F\u7528" : "\u5206\u6790\u5DF2\u6682\u505C");
-      list.replaceChildren();
-      const rows = s.draftMode?.history ?? [];
-      if (!rows.length) list.append(ui.h("p", "be-muted", "\u6682\u65E0\u8349\u7A3F\u68C0\u67E5\u8BB0\u5F55\u3002"));
-      const labels = { reviewed: "\u5DF2\u5206\u6790", needs_review: "\u5F85\u590D\u6838", unavailable: "\u672A\u5B8C\u6210", cancelled: "\u5DF2\u53D6\u6D88" }, observations = { not_seen: "\u672A\u89C2\u5BDF\u5230\u63D0\u4EA4", submitted: "\u89C2\u5BDF\u5230\u5339\u914D\u6807\u8BB0\u63D0\u4EA4", different: "\u89C2\u5BDF\u5230\u4E0D\u540C\uFF0F\u591A\u4E2A\u6807\u8BB0", no_metadata: "\u4E8B\u4EF6\u672A\u63D0\u4F9B\u8EAB\u4F53\u6807\u8BB0\uFF0C\u65E0\u6CD5\u786E\u8BA4\u63D0\u4EA4\uFF08\u5185\u8054\u6807\u8BB0\u53EF\u80FD\u672A\u8BB0\u5F55\uFF09", ambiguous: "\u591A\u9879\u540C\u6587\u5EFA\u8BAE\uFF0C\u65E0\u6CD5\u5F52\u5C5E" };
-      for (const r of rows.slice(-5).reverse()) {
-        list.append(ui.h("p", "be-muted", new Date(r.at).toLocaleTimeString() + " \xB7 " + (labels[r.status] ?? "\u672A\u5B8C\u6210") + " \xB7 " + (r.changed ? "\u6709\u8868\u8FBE\u8C03\u6574\u5EFA\u8BAE" : "\u4FDD\u7559\u539F\u7A3F") + " \xB7 " + (r.durationMs / 1e3).toFixed(1) + "\u79D2"));
-        if (r.body) {
-          const face = BODY_EXPRESSIONS[r.body.suggested] ?? "\u65E0";
-          list.append(ui.h("p", "be-muted", "\u8EAB\u4F53\u5EFA\u8BAE\uFF1A" + face + " \xB7 " + r.body.reason), ui.h("p", "be-muted", "\u63D0\u4EA4\uFF1A" + (observations[r.body.observation] ?? "\u65E0\u6CD5\u786E\u8BA4") + (r.body.submitted ? "\uFF08" + r.body.submitted + "\uFF09" : "") + " \xB7 \u52A8\u753B\u663E\u793A\uFF1A\u65E0\u6CD5\u786E\u8BA4"));
-        }
-      }
-    } catch {
-      summary.textContent = "\u8349\u7A3F\u68C0\u67E5\u8BB0\u5F55\u6682\u4E0D\u53EF\u7528";
-    } finally {
-      busy = false;
-    }
+    const s = await ctx.invoke("state");
+    if (signal.aborted) return;
+    enabled = s.settings.enabled;
+    bodyEnabled = s.bodyCoordination.enabled;
+    status.textContent = s.storageError || (s.draftMode.enabled ? "\u8349\u7A3F\u68C0\u67E5\u5DF2\u5F00\u542F" : "\u8349\u7A3F\u68C0\u67E5\u5DF2\u6682\u505C");
+    toggle.textContent = enabled ? "\u6682\u505C\u8349\u7A3F\u68C0\u67E5" : "\u5F00\u542F\u8349\u7A3F\u68C0\u67E5";
+    body.textContent = bodyEnabled ? "\u5173\u95ED\u8EAB\u4F53\u534F\u8C03" : "\u5F00\u542F\u8EAB\u4F53\u534F\u8C03";
   }
   toggle.addEventListener("click", () => {
     toggle.disabled = true;
-    void ctx.invoke("bodyCoordination", [!enabled]).then(() => refresh()).catch(() => {
-      status.textContent = "\u8EAB\u4F53\u534F\u8C03\u8BBE\u7F6E\u672A\u4FDD\u5B58\uFF0C\u8BF7\u91CD\u8BD5\u3002";
-    }).finally(() => toggle.disabled = false);
+    void ctx.invoke("configure", [{ enabled: !enabled }]).then(() => refresh()).catch(fail).finally(() => toggle.disabled = false);
   }, { signal });
-  void refresh();
+  body.addEventListener("click", () => {
+    body.disabled = true;
+    void ctx.invoke("bodyCoordination", [!bodyEnabled]).then(() => refresh()).catch(fail).finally(() => body.disabled = false);
+  }, { signal });
+  void refresh().catch(fail);
   ctx.interval(() => {
-    void refresh();
+    void refresh().catch(fail);
   }, 5e3);
-}
-
-// src/cloud-providers.ts
-var CLOUD_PROVIDERS = {
-  deepseek: { label: "DeepSeek", url: "https://api.deepseek.com/chat/completions", models: ["deepseek-flash", "deepseek-chat"] },
-  openai: { label: "OpenAI", url: "https://api.openai.com/v1/chat/completions", models: ["gpt-4.1-mini", "gpt-4o-mini"] },
-  qwen: { label: "\u901A\u4E49\u5343\u95EE\uFF08\u767E\u70BC\u5317\u4EAC\uFF09", url: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", models: ["qwen-plus", "qwen-flash"] },
-  moonshot: { label: "Kimi", url: "https://api.moonshot.cn/v1/chat/completions", models: ["kimi-k2.5", "kimi-k2-turbo-preview"] },
-  glm: { label: "\u667A\u8C31 GLM", url: "https://open.bigmodel.cn/api/paas/v4/chat/completions", models: ["glm-4.7-flash", "glm-4.5-air"] }
-};
-
-// web/cloud-controls.ts
-function populateProviders(ui, provider) {
-  for (const [v, p] of Object.entries(CLOUD_PROVIDERS)) {
-    const o = ui.h("option", null, p.label);
-    o.value = v;
-    provider.append(o);
-  }
-}
-function mountCloudModels(ui, parent, provider, model, signal, id) {
-  const presets = ui.h("select");
-  presets.setAttribute("aria-label", "\u5E38\u7528\u4E91\u7AEF\u6A21\u578B");
-  const note = ui.h("p", "be-muted", "\u9009\u62E9\u5E38\u7528\u6A21\u578B\uFF0C\u6216\u5728\u6A21\u578B\u540D\u79F0\u4E2D\u624B\u52A8\u586B\u5199\u3002\u53EF\u7528\u6027\u53CA\u4EF7\u683C\u4EE5\u670D\u52A1\u5546\u8D26\u6237\u4E3A\u51C6\uFF0C\u4FDD\u5B58\u540E\u8BF7\u6D4B\u8BD5\u8FDE\u63A5\u3002");
-  parent.append(presets, note);
-  function refresh() {
-    presets.replaceChildren();
-    const options = CLOUD_PROVIDERS[provider.value]?.models ?? [];
-    for (const value of ["", ...options]) {
-      const o = ui.h("option", null, value || "\u5E38\u7528\u6A21\u578B / \u624B\u52A8\u586B\u5199");
-      o.value = value;
-      presets.append(o);
-    }
-    presets.value = options.includes(model.value) ? model.value : "";
-  }
-  provider.addEventListener("change", () => {
-    const p = CLOUD_PROVIDERS[provider.value];
-    model.value = p?.models[0] ?? "";
-    refresh();
-    model.dispatchEvent(new model.ownerDocument.defaultView.Event("input", { bubbles: true }));
-  }, { signal });
-  presets.addEventListener("change", () => {
-    if (presets.value) {
-      model.value = presets.value;
-      model.dispatchEvent(new model.ownerDocument.defaultView.Event("input", { bubbles: true }));
-    }
-  }, { signal });
-  model.addEventListener("input", refresh, { signal });
-  refresh();
-  return { refresh, presets, note };
 }
 
 // web/styles.ts
 var styles = `
-.be-library .be-consent{display:flex;gap:10px;align-items:flex-start;margin:14px 0}.be-library .be-consent input{flex:none;margin-top:4px}
-.be-library [hidden]{display:none!important}.be-library .be-record-controls{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 12px;align-items:center}.be-library .be-record-controls select{width:auto;max-width:100%}.be-library .be-record-list{display:grid;gap:16px}.be-library .be-record p{margin:8px 0}.be-library .be-record-text{white-space:pre-wrap;font-size:16px}.be-library .be-record textarea{margin-top:12px}.be-library .be-record button[aria-pressed=true]{border-color:var(--be-accent);color:var(--be-accent)}
 .be-library{--be-ink:#25283d;--be-muted:#777b8e;--be-line:#e8e9f1;--be-accent:#515bfa;--be-surface:#fff;color:var(--be-ink)}
 .be-library .be-page{max-width:1100px;margin:0 auto;padding:8px 0 32px;font-size:14px;line-height:1.6}
 .be-library [hidden]{display:none!important}
@@ -165,444 +102,8 @@ var styles = `
 .be-form select{max-width:100%;padding:8px;border:1px solid #dce0e8;border-radius:8px}
 `;
 
-// web/guide.ts
-var guidePanel = { mount(ctx) {
-  const { ui, root, signal } = ctx;
-  root.classList.add("be-library");
-  root.append(ui.h("style", null, styles));
-  const page = ui.h("div", "be-page");
-  root.append(page);
-  page.append(ui.h("h2", null, "\u8BA9\u8868\u60C5\u966A\u4F60\u5F00\u59CB"), ui.h("p", "be-muted", "\u63A8\u8350\u914D\u7F6E\u5206\u6790 API \u5E76\u5F00\u542F\u8868\u8FBE\u8BB0\u5F55\u4E0E\u5206\u6790\uFF0C\u81EA\u52A8\u542F\u7528\u8349\u7A3F\u68C0\u67E5\u3002\u76F4\u63A5\u4F7F\u7528\u8868\u60C5\u5E93\u4E5F\u53EF\u4EE5\uFF0C\u4F46\u7F3A\u5C11\u5206\u6790\u4E0E\u68C0\u67E5\uFF0C\u4E0D\u80FD\u4FDD\u8BC1\u8868\u60C5\u4F7F\u7528\u7684\u7A33\u5B9A\u6027\uFF1B\u914D\u7F6E\u540E\u4ECD\u4E0D\u4FDD\u8BC1\u6BCF\u6B21\u91C7\u7EB3\u5EFA\u8BAE\u3002"));
-  const status = ui.h("p", "be-habit", "\u6B63\u5728\u8BFB\u53D6\u72B6\u6001\u2026"), message = ui.h("p", "be-message");
-  message.setAttribute("role", "status");
-  message.hidden = true;
-  page.append(status, message);
-  const choices = ui.h("section", "be-card"), basic = ui.button("\u76F4\u63A5\u4F7F\u7528\u8868\u60C5\u5E93"), analysis = ui.button("\u8BBE\u7F6E\u5206\u6790\u4E0E\u53CD\u9988", { variant: "primary" });
-  choices.append(ui.h("h3", null, "\u9009\u62E9\u9002\u5408\u4F60\u7684\u65B9\u5F0F"), ui.h("p", "be-muted", "\u76F4\u63A5\u4F7F\u7528\uFF1A\u65E0\u9700\u989D\u5916API\u6216\u6A21\u578B\u3002\u53EF\u5728\u300C\u8868\u60C5\u5E93\u300D\u641C\u7D22\u3001\u542F\u505C\u8868\u60C5\u3002"), basic, ui.h("p", "be-muted", "\u63A8\u8350\uFF1A\u914D\u7F6E API \u540E\uFF0C\u68C0\u67E5\u53D1\u9001\u524D\u8349\u7A3F\u5E76\u5206\u6790\u65B0\u7684\u53D1\u8A00\uFF0C\u5E2E\u52A9\u51CF\u5C11\u6F0F\u7528\u3002"), analysis);
-  page.append(choices);
-  mountDraftStatus(ctx, page);
-  const setup = ui.h("section", "be-card");
-  setup.hidden = true;
-  page.append(setup);
-  setup.append(ui.h("h3", null, "1 \xB7 \u9009\u62E9\u5206\u6790\u65B9\u5F0F"));
-  const backend = ui.h("select"), provider = ui.h("select"), model = ui.h("input"), key = ui.h("input"), detect = ui.button("\u68C0\u6D4B\u672C\u673A\u6A21\u578B");
-  for (const [v, n] of [["cloud", "\u4E91\u7AEFAPI"], ["ollama", "\u672C\u673AOllama"]]) {
-    const o = ui.h("option", null, n);
-    o.value = v;
-    backend.append(o);
-  }
-  populateProviders(ui, provider);
-  backend.setAttribute("aria-label", "\u5206\u6790\u65B9\u5F0F");
-  provider.setAttribute("aria-label", "\u4E91\u7AEF\u670D\u52A1");
-  model.setAttribute("aria-label", "\u5206\u6790\u6A21\u578B");
-  model.placeholder = "\u6A21\u578B\u540D\u79F0";
-  key.type = "password";
-  key.autocomplete = "off";
-  key.placeholder = "API Key\uFF0C\u5DF2\u4FDD\u5B58\u65F6\u53EF\u7559\u7A7A";
-  key.setAttribute("aria-label", "API Key");
-  const field = (label, node) => {
-    const el = ui.h("label", "be-field");
-    el.append(ui.h("span", null, label), node);
-    return el;
-  };
-  const providerField = field("\u4E91\u7AEF\u670D\u52A1", provider), keyField = field("API Key", key);
-  setup.append(field("\u5206\u6790\u65B9\u5F0F", backend), providerField, field("\u6A21\u578B\u540D\u79F0", model), keyField, detect, ui.h("p", "be-muted", "\u4E91\u7AEF\u9700\u72EC\u7ACBAPI Key\u548CAPI\u989D\u5EA6\uFF0C\u4E0D\u81EA\u52A8\u590D\u7528\u804A\u5929\u8FDE\u63A5\uFF0CChatGPT\u8BA2\u9605\u4E0D\u4EE3\u66FFAPI\u989D\u5EA6\u3002\u672C\u673AOllama\u9700\u5148\u8FD0\u884C\u670D\u52A1\u5E76\u5B89\u88C5\u6A21\u578B\uFF0C\u4E0D\u4F1A\u81EA\u52A8\u4E0B\u8F7D\u3002"));
-  const cloudChoices = ui.h("div");
-  setup.append(cloudChoices);
-  const cloudPicker = mountCloudModels(ui, cloudChoices, provider, model, signal, "guide");
-  const localStatus = ui.h("p", "be-muted"), localModels = ui.h("select");
-  localModels.setAttribute("aria-label", "\u68C0\u6D4B\u5230\u7684\u672C\u673A\u6A21\u578B");
-  localModels.hidden = true;
-  setup.append(localStatus, localModels);
-  localModels.addEventListener("change", () => {
-    model.value = localModels.value;
-    edited();
-  }, { signal });
-  const save = ui.button("\u4FDD\u5B58\u8BBE\u7F6E\uFF08\u6682\u505C\u5206\u6790\uFF09"), test = ui.button("\u6D4B\u8BD5\u5DF2\u4FDD\u5B58\u7684\u8FDE\u63A5");
-  setup.append(ui.h("h3", null, "2 \xB7 \u4FDD\u5B58\u5E76\u6D4B\u8BD5"), save, test, ui.h("p", "be-muted", "\u6D4B\u8BD5\u53EA\u53D1\u9001\u56FA\u5B9A\u6D4B\u8BD5\u6587\u672C\uFF0C\u4E0D\u8BFB\u53D6\u804A\u5929\uFF1B\u4E91\u7AEF\u6D4B\u8BD5\u4E5F\u53EF\u80FD\u4EA7\u751FAPI\u7528\u91CF\u3002"));
-  const consent = ui.h("input");
-  consent.type = "checkbox";
-  const consentLabel = ui.h("label", "be-consent");
-  consentLabel.append(consent, ui.h("span", null, "\u6211\u4E86\u89E3\uFF1A\u5F00\u542F\u540E\u4EC5\u6536\u96C6\u65B0\u7684\u684C\u5BA0\u53D1\u8A00\uFF0C\u6700\u591A100\u6761\u672C\u5730\u660E\u6587\u8BB0\u5F55\uFF1B\u539F\u8BDD\u3001\u53D1\u9001\u524D\u8349\u7A3F\u3001\u5F53\u524D\u8BED\u5883\u4E0E\u8868\u60C5\u5E93\u6458\u8981\u4EA4\u7ED9\u6240\u9009\u6A21\u578B\uFF0C\u4E91\u7AEF\u53EF\u80FD\u6536\u8D39\u5E76\u589E\u52A0\u7B49\u5F85\u3002\u5F00\u542F\u5206\u6790\u5373\u540C\u65F6\u542F\u7528\u8349\u7A3F\u68C0\u67E5\u3002\u65E0\u9700\u5BFC\u5165\u6216\u5F00\u542F\u5BBF\u4E3B\u5386\u53F2\u804A\u5929\u8BB0\u5F55\u3002"));
-  const start = ui.button("\u5F00\u542F\u5206\u6790\u4E0E\u53CD\u9988", { variant: "primary" }), pause = ui.button("\u6682\u505C\u5206\u6790");
-  start.disabled = true;
-  setup.append(ui.h("h3", null, "3 \xB7 \u786E\u8BA4\u540E\u5F00\u542F"), consentLabel, start, pause, ui.h("p", "be-muted", "\u53EF\u968F\u65F6\u5728\u300C\u8868\u8FBE\u8BB0\u5F55\u300D\u6682\u505C\u3001\u6E05\u7A7A\u6216\u8DF3\u8FC7\u3002\u5206\u6790\u662F\u4E8B\u540E\u8BC4\u4EF7\uFF0C\u4E0D\u662F\u684C\u5BA0\u7684\u5185\u90E8\u601D\u8003\uFF1B\u4E3B\u6A21\u578B\u53EF\u80FD\u4E0D\u91C7\u7EB3\u5EFA\u8BAE\u3002"));
-  let tested = false, dirty = false;
-  function notify(text, bad = false) {
-    if (signal.aborted) return;
-    message.hidden = false;
-    message.textContent = text;
-    message.classList.toggle("be-error", bad);
-  }
-  function fail(e) {
-    notify(String(e.message ?? e), true);
-  }
-  function gate() {
-    start.disabled = !tested || dirty || !consent.checked;
-    test.disabled = dirty;
-  }
-  function visible() {
-    providerField.hidden = keyField.hidden = backend.value !== "cloud";
-    detect.hidden = backend.value !== "ollama";
-    cloudChoices.hidden = backend.value !== "cloud";
-    localStatus.hidden = backend.value !== "ollama";
-    localModels.hidden = backend.value !== "ollama" || !localModels.options.length;
-  }
-  function edited() {
-    dirty = true;
-    tested = false;
-    gate();
-    visible();
-  }
-  for (const node of [backend, provider, model, key]) node.addEventListener("input", edited, { signal });
-  backend.addEventListener("change", () => {
-    model.value = backend.value === "cloud" && provider.value === "deepseek" ? "deepseek-flash" : "";
-    edited();
-  }, { signal });
-  provider.addEventListener("change", () => {
-    key.value = "";
-    edited();
-  }, { signal });
-  consent.addEventListener("change", gate, { signal });
-  async function refresh(initial = false) {
-    const data = await ctx.invoke("state");
-    if (signal.aborted) return;
-    status.textContent = data.storageError || data.cloud.error ? "\u914D\u7F6E\u5F02\u5E38 \xB7 " + (data.storageError || data.cloud.error) : data.settings.enabled ? "\u5206\u6790\u4E0E\u8349\u7A3F\u68C0\u67E5\u6B63\u5728\u8FD0\u884C \xB7 " + (data.settings.backend === "cloud" ? "\u4E91\u7AEFAPI" : "\u672C\u673AOllama") : "\u5206\u6790\u4E0E\u53CD\u9988\u672A\u5F00\u542F \xB7 \u8868\u60C5\u5E93\u53EF\u76F4\u63A5\u4F7F\u7528";
-    if (initial) {
-      backend.value = data.settings.backend;
-      provider.value = data.cloud.provider;
-      model.value = data.settings.backend === "cloud" ? data.cloud.model : data.settings.model;
-      setup.hidden = data.guideChoice !== "analysis" && !data.settings.enabled;
-      cloudPicker.refresh();
-      visible();
-    }
-    pause.disabled = !data.settings.enabled;
-  }
-  basic.addEventListener("click", () => {
-    void ctx.invoke("guide", ["basic"]).then(() => {
-      setup.hidden = true;
-      notify("\u5DF2\u9009\u62E9\u57FA\u7840\u4F7F\u7528\uFF0C\u5206\u6790\u5DF2\u6682\u505C\u3002\u70B9\u51FB\u4E0A\u65B9\u300C\u8868\u60C5\u5E93\u300D\u7BA1\u7406\u8868\u60C5\u3002");
-      return refresh();
-    }).catch(fail);
-  }, { signal });
-  analysis.addEventListener("click", () => {
-    void ctx.invoke("guide", ["analysis"]).then(() => {
-      setup.hidden = false;
-      return refresh();
-    }).catch(fail);
-  }, { signal });
-  save.addEventListener("click", () => {
-    save.disabled = true;
-    tested = false;
-    void (async () => {
-      if (backend.value === "cloud") await ctx.invoke("cloud", [{ provider: provider.value, model: model.value, apiKey: key.value }]);
-      await ctx.invoke("configure", [{ enabled: false, backend: backend.value, model: backend.value === "ollama" ? model.value : "" }]);
-      key.value = "";
-      dirty = false;
-      gate();
-      notify("\u8BBE\u7F6E\u5DF2\u4FDD\u5B58\uFF0C\u5206\u6790\u4FDD\u6301\u6682\u505C\u3002\u4E0B\u4E00\u6B65\u6D4B\u8BD5\u8FDE\u63A5\u3002");
-      await refresh();
-    })().catch(fail).finally(() => save.disabled = false);
-  }, { signal });
-  test.addEventListener("click", () => {
-    test.disabled = true;
-    void ctx.invoke("test").then((r) => {
-      tested = r.ok;
-      notify(r.message, !r.ok);
-      gate();
-    }).catch(fail).finally(() => {
-      test.disabled = dirty;
-    });
-  }, { signal });
-  detect.addEventListener("click", () => {
-    detect.disabled = true;
-    detect.textContent = "\u6B63\u5728\u68C0\u6D4B\u2026";
-    localStatus.textContent = "\u6B63\u5728\u8FDE\u63A5\u672C\u673A Ollama\uFF0C\u8BF7\u7A0D\u5019\u2026";
-    void ctx.invoke("models").then((r) => {
-      if (signal.aborted) return;
-      localModels.replaceChildren();
-      for (const name of r.models ?? []) {
-        const o = ui.h("option", null, name);
-        o.value = name;
-        localModels.append(o);
-      }
-      localStatus.textContent = r.error || ((r.models ?? []).length ? "\u68C0\u6D4B\u5230 " + r.models.length + " \u4E2A\u6A21\u578B\uFF0C\u8BF7\u9009\u62E9\u540E\u4FDD\u5B58\u3002" : "Ollama \u5DF2\u8FDE\u63A5\uFF0C\u4F46\u6CA1\u6709\u5DF2\u5B89\u88C5\u7684\u6A21\u578B\uFF1B\u8BF7\u5148\u5728 Ollama \u5B89\u88C5\u6A21\u578B\u540E\u91CD\u65B0\u68C0\u6D4B\u3002");
-      if (r.models?.length) {
-        model.value = r.models.includes(model.value) ? model.value : r.models[0];
-        localModels.value = model.value;
-        edited();
-      }
-      visible();
-    }).catch((e) => {
-      localStatus.textContent = "\u68C0\u6D4B\u5931\u8D25\uFF0C\u8BF7\u786E\u8BA4 Ollama \u6B63\u5728\u8FD0\u884C\u3002";
-      fail(e);
-    }).finally(() => {
-      detect.disabled = false;
-      detect.textContent = "\u68C0\u6D4B\u672C\u673A\u6A21\u578B";
-    });
-  }, { signal });
-  start.addEventListener("click", () => {
-    start.disabled = true;
-    void ctx.invoke("enableGuided", [consent.checked]).then(() => {
-      tested = false;
-      notify("\u5DF2\u5F00\u542F\u8868\u8FBE\u5206\u6790\u4E0E\u8349\u7A3F\u68C0\u67E5\uFF0C\u7B49\u5F85\u684C\u5BA0\u4E0B\u4E00\u53E5\u65B0\u53D1\u8A00\u3002\u7ED3\u679C\u8BF7\u5230\u300C\u8868\u8FBE\u8BB0\u5F55\u300D\u67E5\u770B\u3002");
-      return refresh();
-    }).catch(fail).finally(gate);
-  }, { signal });
-  pause.addEventListener("click", () => {
-    void ctx.invoke("state").then((s) => ctx.invoke("configure", [{ ...s.settings, enabled: false }])).then(() => refresh()).catch(fail);
-  }, { signal });
-  visible();
-  void refresh(true).catch(fail);
-  ctx.interval(() => {
-    void refresh().catch(fail);
-  }, 5e3);
-} };
-
-// web/records.ts
-var emotions = { neutral: "\u4E2D\u6027", calm: "\u5E73\u9759\u3001\u653E\u677E", joy: "\u5F00\u5FC3", amusement: "\u597D\u7B11", excitement: "\u5174\u594B", celebration: "\u5E86\u795D", affection: "\u559C\u6B22", playfulness: "\u4FCF\u76AE", shyness: "\u5BB3\u7F9E", embarrassment: "\u5C34\u5C2C", surprise: "\u60CA\u8BB6", thinking: "\u601D\u8003", confusion: "\u7591\u60D1", skepticism: "\u6000\u7591", worry: "\u62C5\u5FC3", fear: "\u5BB3\u6015", sadness: "\u96BE\u8FC7", grief: "\u60B2\u75DB", disappointment: "\u5931\u671B", comfort: "\u5B89\u6170\u3001\u966A\u4F34", apology: "\u6B49\u610F", anger: "\u751F\u6C14", frustration: "\u6CAE\u4E27", determination: "\u575A\u5B9A", pride: "\u81EA\u8C6A", gratitude: "\u611F\u8C22", tiredness: "\u75B2\u60EB", sleepy: "\u56F0\u5026", disgust: "\u53CD\u611F", illness: "\u4E0D\u9002", uncertain: "\u8BED\u5883\u4E0D\u8DB3\uFF0C\u6682\u4E0D\u786E\u5B9A" };
-var verdicts = { appropriate: "\u4F7F\u7528\u5408\u9002", missing: "\u53EF\u80FD\u6F0F\u7528", unnecessary: "\u4E0D\u4F7F\u7528\u4E5F\u5408\u7406", inappropriate: "\u53EF\u80FD\u4E0D\u5339\u914D", uncertain: "\u6682\u4E0D\u80FD\u5224\u65AD" };
-var states = { pending: "\u7B49\u5F85\u5206\u6790", analyzing: "\u6B63\u5728\u5206\u6790", unavailable: "\u6682\u672A\u5206\u6790", error: "\u5206\u6790\u672A\u5B8C\u6210", deferred: "\u5F85\u624B\u52A8\u5206\u6790", needs_review: "\u5F85\u590D\u6838", skipped: "\u5DF2\u8DF3\u8FC7" };
-var recordsPanel = { mount(ctx) {
-  const { ui, root, signal } = ctx;
-  root.classList.add("be-library");
-  root.append(ui.h("style", null, styles));
-  const page = ui.h("div", "be-page");
-  root.append(page);
-  page.append(ui.h("h2", null, "\u8868\u8FBE\u8BB0\u5F55"), ui.h("p", "be-muted", "\u770B\u770B\u4E00\u53E5\u8BDD\u4F20\u8FBE\u4E86\u4EC0\u4E48\u5FC3\u60C5\uFF0C\u8868\u60C5\u7528\u5F97\u662F\u5426\u5408\u9002\u3002\u5F00\u542F\u5206\u6790\u540E\u81EA\u52A8\u542F\u7528\u53D1\u9001\u524D\u8349\u7A3F\u68C0\u67E5\uFF1B\u5206\u6790\u4EC5\u4F9B\u5EFA\u8BAE\uFF0C\u4E0D\u662F\u684C\u5BA0\u539F\u59CB\u51B3\u7B56\u7406\u7531\u3002"));
-  mountDraftStatus(ctx, page);
-  const controls = ui.h("div", "be-record-controls"), backend = ui.h("select"), model = ui.h("select"), detect = ui.button("\u68C0\u6D4B\u672C\u673A\u6A21\u578B"), toggle = ui.button("\u5F00\u59CB\u8BB0\u5F55\u4E0E\u5206\u6790", { variant: "primary" }), clear = ui.button("\u6E05\u7A7A\u8BB0\u5F55");
-  backend.setAttribute("aria-label", "\u5206\u6790\u65B9\u5F0F");
-  model.setAttribute("aria-label", "\u672C\u673A\u5206\u6790\u6A21\u578B");
-  for (const [value, label] of [["cloud", "\u901A\u8FC7\u4E91\u7AEF API \u5206\u6790"], ["ollama", "\u901A\u8FC7\u672C\u673A Ollama \u5206\u6790"]]) {
-    const o = ui.h("option", null, label);
-    o.value = value;
-    backend.append(o);
-  }
-  const placeholder = ui.h("option", null, "\u8BF7\u9009\u62E9\u5DF2\u5B89\u88C5\u6A21\u578B");
-  placeholder.value = "";
-  model.append(placeholder);
-  const cloud = ui.h("div", "be-record-controls"), provider = ui.h("select"), cloudModel = ui.h("input"), key = ui.h("input"), save = ui.button("\u4FDD\u5B58\u4E91\u7AEF\u8BBE\u7F6E"), removeKey = ui.button("\u505C\u7528\u5DF2\u4FDD\u5B58\u5BC6\u94A5");
-  populateProviders(ui, provider);
-  provider.setAttribute("aria-label", "\u4E91\u7AEF\u670D\u52A1");
-  cloudModel.setAttribute("aria-label", "\u4E91\u7AEF\u6A21\u578B");
-  cloudModel.placeholder = "\u6A21\u578B\u540D\u79F0";
-  cloudModel.value = "deepseek-flash";
-  key.type = "password";
-  key.autocomplete = "off";
-  key.placeholder = "API Key\uFF08\u4FDD\u5B58\u540E\u4E0D\u56DE\u663E\uFF09";
-  key.setAttribute("aria-label", "API Key");
-  provider.addEventListener("change", () => {
-    cloudModel.value = provider.value === "deepseek" ? "deepseek-flash" : "";
-    key.value = "";
-  }, { signal });
-  cloud.append(provider, cloudModel, key, save, removeKey);
-  page.append(cloud, ui.h("p", "be-muted", "\u4E91\u7AEF\u5206\u6790\u9700\u5355\u72EC\u586B\u5199\u670D\u52A1\u5546 API Key\uFF0CChatGPT \u8BA2\u9605\u4E0D\u80FD\u4EE3\u66FF API \u989D\u5EA6\u3002\u5F00\u542F\u5206\u6790\u5373\u540C\u6B65\u542F\u7528\u8349\u7A3F\u68C0\u67E5\uFF0C\u5C06\u628A\u65B0\u53D1\u8A00\u3001\u53D1\u9001\u524D\u8349\u7A3F\u3001\u5F53\u524D\u8BED\u5883\u548C\u8868\u60C5\u5E93\u6458\u8981\u4EA4\u7ED9\u670D\u52A1\u5546\uFF0C\u53EF\u80FD\u4EA7\u751F API \u8D39\u7528\u4E0E\u7B49\u5F85\u3002\u5BC6\u94A5\u7531\u5BBF\u4E3B\u90E8\u7F72 .env \u7BA1\u7406\uFF0C\u4E0D\u56DE\u663E\uFF1B\u505C\u7528\u4E0D\u4F1A\u64A4\u9500\u670D\u52A1\u5546\u5BC6\u94A5\uFF1B\u8BB0\u5F55\u9ED8\u8BA4\u5173\u95ED\u3002"));
-  controls.append(backend, model, detect, toggle, clear);
-  page.append(controls, ui.h("p", "be-muted", "\u4EC5\u6536\u96C6\u5F00\u542F\u540E\u7684\u65B0\u53D1\u8A00\uFF0C\u6700\u591A\u4FDD\u7559100\u6761\u672C\u5730\u8BB0\u5F55\u3002AI\u5206\u6790\u4F1A\u628A\u672C\u6761\u539F\u8BDD\u548C\u8868\u60C5\u5E93\u6458\u8981\u4EA4\u7ED9\u6240\u9009\u6A21\u578B\uFF0C\u53EF\u80FD\u4EA7\u751F\u7528\u91CF\uFF1B\u4E0D\u4F1A\u81EA\u52A8\u4E0B\u8F7D\u6A21\u578B\uFF0C\u53D1\u73B0\u8FD1\u671F\u6F0F\u7528\u4E14\u6709\u5408\u9002\u8868\u60C5\u65F6\uFF0C\u4F1A\u5728\u540E\u7EED\u6B63\u5E38\u5BF9\u8BDD\u4E2D\u7ED9\u684C\u5BA0\u4E00\u6B21\u9650\u9891\u5EFA\u8BAE\uFF0C\u4E0D\u4F1A\u8865\u53D1\u65E7\u8BDD\u6216\u81EA\u52A8\u6DFB\u52A0\u8868\u60C5\u3002"));
-  const message = ui.h("p", "be-message");
-  message.hidden = true;
-  message.setAttribute("role", "status");
-  const status = ui.h("p", "be-count"), list = ui.h("div", "be-record-list");
-  page.append(message, status, list);
-  const drafts = /* @__PURE__ */ new Map();
-  let settings = { enabled: false, backend: "cloud", model: "" }, initialized = false, signature = "", refreshing = false;
-  function notify(text, bad = false) {
-    if (signal.aborted) return;
-    message.hidden = false;
-    message.textContent = text;
-    message.classList.toggle("be-error", bad);
-  }
-  function fail(e) {
-    notify(String(e.message ?? e), true);
-  }
-  const cloudPicker = mountCloudModels(ui, cloud, provider, cloudModel, signal, "records");
-  function showBackend() {
-    model.hidden = backend.value !== "ollama";
-    detect.hidden = backend.value !== "ollama";
-    cloud.hidden = backend.value !== "cloud";
-  }
-  backend.addEventListener("change", showBackend, { signal });
-  showBackend();
-  async function refresh() {
-    if (refreshing || signal.aborted) return;
-    refreshing = true;
-    try {
-      const data = await ctx.invoke("state");
-      if (signal.aborted) return;
-      settings = data.settings;
-      if (!initialized) {
-        backend.value = settings.backend;
-        provider.value = data.cloud.provider;
-        cloudModel.value = data.cloud.model;
-        cloudPicker.refresh();
-        key.placeholder = data.cloud.keyConfigured ? "\u5DF2\u4FDD\u5B58\u5BC6\u94A5\uFF0C\u7559\u7A7A\u4FDD\u7559" : "\u8BF7\u8F93\u5165 API Key";
-        model.value = settings.model;
-        if (settings.model && !model.value) {
-          const o = ui.h("option", null, settings.model);
-          o.value = settings.model;
-          model.append(o);
-          model.value = settings.model;
-        }
-        showBackend();
-        initialized = true;
-      }
-      toggle.textContent = settings.enabled ? "\u6682\u505C\u8BB0\u5F55\u4E0E\u5206\u6790" : "\u5F00\u59CB\u8BB0\u5F55\u4E0E\u5206\u6790";
-      status.textContent = (settings.enabled ? "\u6B63\u5728\u8BB0\u5F55 \xB7 \u8349\u7A3F\u68C0\u67E5\u5DF2\u542F\u7528" : "\u5DF2\u6682\u505C") + " \xB7 " + data.rows.length + " / 100 \u6761" + (settings.backend === "cloud" && !data.cloud.keyConfigured ? " \xB7 \u8BF7\u5148\u914D\u7F6E\u4E91\u7AEF API Key" : "");
-      if (data.storageError || data.cloud.error) notify(data.storageError || data.cloud.error, true);
-      if (data.diagnostics?.observationTruncated) status.textContent += " \xB7 \u79EF\u538B\u89C2\u5BDF\u7A97\u53E3\u5DF2\u622A\u65AD\uFF0C\u53EA\u7EDF\u8BA1\u6700\u8FD1100\u6761";
-      if (data.diagnostics) status.textContent += " \xB7 \u4E91\u7AEF\u8BF7\u6C42 " + data.diagnostics.cloudCallsLastHour + "/" + data.diagnostics.cloudHourlyLimit + " \u6B21/\u5C0F\u65F6";
-      const next = JSON.stringify(data.rows);
-      if (next === signature || list.contains(root.ownerDocument.activeElement) && root.ownerDocument.activeElement?.tagName === "TEXTAREA") return;
-      signature = next;
-      list.replaceChildren();
-      if (!data.rows.length) list.append(ui.h("p", "be-empty", settings.enabled ? "\u7B49\u5F85\u684C\u5BA0\u7684\u4E0B\u4E00\u53E5\u53D1\u8A00\u3002" : "\u5F00\u542F\u540E\u4F1A\u8BB0\u5F55\u65B0\u7684\u53D1\u8A00\uFF0C\u4E0D\u8BFB\u53D6\u65E7\u804A\u5929\u3002"));
-      for (const row of data.rows) {
-        const card = ui.h("section", "be-card be-record");
-        card.dataset.recordId = row.id;
-        const head = ui.h("div", "be-card-heading");
-        head.append(ui.h("span", "be-muted", new Date(row.at).toLocaleString()), ui.h("span", "be-badge", row.state === "done" ? verdicts[row.analysis.verdict] : states[row.state]));
-        card.append(head, ui.h("p", "be-record-text", row.text), ui.h("p", "be-muted", "\u5B9E\u9645\u8868\u60C5\uFF1A" + (row.emoji.length ? row.emoji.join(" ") : "\u672A\u4F7F\u7528")));
-        const bodyVerdicts = { compatible: "\u57FA\u672C\u534F\u8C03", conflict: "\u53EF\u80FD\u51B2\u7A81", uncertain: "\u65E0\u6CD5\u786E\u8BA4", absent: "\u6CA1\u6709" };
-        const hasBody = !!row.bodyEvidence?.expressions.length;
-        const bodyPanel = ui.h("details", "be-edit");
-        bodyPanel.append(ui.h("summary", null, "\u8EAB\u4F53\u5FC3\u60C5\u5206\u6790 \xB7 " + (!hasBody ? "\u6CA1\u6709" : row.bodyAnalysis ? bodyVerdicts[row.bodyAnalysis.expression.verdict] : "\u5F85\u5206\u6790")));
-        bodyPanel.append(ui.h("p", "be-muted", "\u8EAB\u4F53\u5FC3\u60C5\u8BB0\u5F55\uFF1A" + (hasBody ? row.bodyEvidence.expressions.map((x) => BODY_EXPRESSIONS[x] ?? x).join("\u3001") : "\u6CA1\u6709")), ui.h("p", "be-muted", "\u4EC5\u6309\u672C\u6761\u8BB0\u5F55\u4E2D\u7684\u8EAB\u4F53\u5FC3\u60C5\u4FE1\u606F\u5206\u6790\uFF0C\u4E0D\u4EE3\u8868\u5F53\u524D\u8EAB\u4F53\u72B6\u6001\u3002"));
-        if (hasBody && row.bodyAnalysis) {
-          bodyPanel.append(ui.h("p", null, "\u8EAB\u4F53\u5FC3\u60C5\u5339\u914D\uFF1A" + bodyVerdicts[row.bodyAnalysis.expression.verdict]), ui.h("p", "be-muted", row.bodyAnalysis.expression.explanation));
-        }
-        card.append(bodyPanel);
-        if (row.diagnostics) card.append(ui.h("p", "be-muted", "\u5206\u6790\u6B21\u6570\uFF1A" + row.diagnostics.attempts + (row.diagnostics.durationMs !== void 0 ? " \xB7 \u8017\u65F6 " + (row.diagnostics.durationMs / 1e3).toFixed(1) + " \u79D2" : "") + (row.diagnostics.errorCode ? " \xB7 \u539F\u56E0\uFF1A" + row.diagnostics.errorCode : "")));
-        if (row.hint) {
-          const labels = { queued: "\u7B49\u5F85\u6B63\u5E38\u5BF9\u8BDD", rendered: "\u5DF2\u6210\u6587\uFF0C\u5F85\u5BBF\u4E3B\u786E\u8BA4", delivered: "\u5BBF\u4E3B\u5DF2\u786E\u8BA4\u9001\u8FBE", discarded: "\u5DF2\u4E22\u5F03", expired: "\u5DF2\u8FC7\u671F", cancelled: "\u5DF2\u53D6\u6D88", skipped: "\u672A\u6392\u961F" };
-          card.append(ui.h("p", "be-muted", "\u53CD\u9988\u72B6\u6001\uFF1A" + labels[row.hint.state] + " \xB7 " + row.hint.reason));
-          if (row.hint.followup) card.append(ui.h("p", "be-muted", "\u9001\u8FBE\u540E\u9996\u6761\u53D1\u8A00\uFF1A" + (row.hint.followup.hasEmoji ? "\u5305\u542B\u8868\u60C5" : "\u6CA1\u6709\u8868\u60C5") + "\uFF08\u4EC5\u89C2\u5BDF\uFF0C\u4E0D\u4EE3\u8868\u5EFA\u8BAE\u88AB\u91C7\u7EB3\uFF09"));
-        }
-        if (row.notice) card.append(ui.h("p", "be-muted", row.notice));
-        if ((row.diagnostics?.repeatCount ?? 0) >= 2) card.append(ui.h("p", "be-muted", "\u76F8\u540C\u539F\u56E0\u5DF2\u8FDE\u7EED\u5931\u8D25 " + row.diagnostics.repeatCount + " \u6B21\uFF0C\u539F\u6837\u91CD\u8BD5\u53EF\u80FD\u4ECD\u5931\u8D25\u3002\u8BF7\u68C0\u67E5\u670D\u52A1\u6216\u8C03\u6574\u6A21\u578B\uFF0C\u4E5F\u53EF\u4EE5\u8DF3\u8FC7\u8FD9\u6761\u3002"));
-        if (row.truncated) card.append(ui.h("p", "be-muted", "\u957F\u53D1\u8A00\u5DF2\u622A\u53D6\uFF0C\u5206\u6790\u53EF\u80FD\u7F3A\u5C11\u8BED\u5883\u3002"));
-        if (row.analysis) {
-          card.append(ui.h("p", null, "\u60C5\u7EEA\u5224\u65AD\uFF1A" + (emotions[row.analysis.emotion] ?? "\u6682\u4E0D\u786E\u5B9A")), ui.h("p", "be-muted", "\u5206\u6790\u8BF4\u660E\uFF1A" + row.analysis.explanation));
-          if (row.analysis.suggestion) card.append(ui.h("p", null, "\u53EF\u8003\u8651\uFF1A" + row.analysis.suggestion));
-          card.append(ui.h("p", "be-muted", "\u4E8B\u540E\u5206\u6790 \xB7 " + (row.analyzer ?? "AI\u6A21\u578B")));
-          const feedback = ui.h("div", "be-actions"), yes = ui.button("\u5224\u65AD\u5BF9\u4E86"), no = ui.button("\u5224\u65AD\u9519\u4E86"), note = ui.h("textarea");
-          note.rows = 2;
-          note.maxLength = 200;
-          note.placeholder = "\u53EF\u9009\uFF1A\u6307\u51FA\u54EA\u91CC\u5224\u65AD\u9519\u4E86\uFF0C\u4F8B\u5982\u5F15\u7528\u3001\u5426\u5B9A\u6216\u60C5\u7EEA\u5F52\u5C5E";
-          note.setAttribute("aria-label", "\u5224\u65AD\u53CD\u9988\u8BF4\u660E");
-          note.value = drafts.get(row.id) ?? row.feedback?.note ?? "";
-          note.addEventListener("input", () => drafts.set(row.id, note.value), { signal });
-          const send = (correct) => {
-            yes.disabled = no.disabled = true;
-            void ctx.invoke("feedback", [row.id, correct, note.value]).then(() => {
-              signature = "";
-              notify("\u53CD\u9988\u5DF2\u4FDD\u5B58\uFF1B\u4E0D\u4F1A\u636E\u6B64\u8BAD\u7EC3\u6A21\u578B\uFF1B\u6807\u8BB0\u5224\u65AD\u9519\u8BEF\u4F1A\u4F7F\u5C1A\u672A\u9001\u8FBE\u7684\u672C\u6761\u5EFA\u8BAE\u5931\u6548\u3002");
-            }).catch(fail).finally(() => {
-              yes.disabled = no.disabled = false;
-              void refresh();
-            });
-          };
-          yes.addEventListener("click", () => send(true), { signal });
-          no.addEventListener("click", () => send(false), { signal });
-          if (row.feedback) {
-            yes.setAttribute("aria-pressed", String(row.feedback.correct));
-            no.setAttribute("aria-pressed", String(!row.feedback.correct));
-            card.append(ui.h("p", "be-muted", row.feedback.correct ? "\u5DF2\u53CD\u9988\uFF1A\u5224\u65AD\u5BF9\u4E86" : "\u5DF2\u53CD\u9988\uFF1A\u5224\u65AD\u9519\u4E86\uFF0C\u5F85\u590D\u6838"));
-          }
-          feedback.append(yes, no);
-          card.append(note, feedback);
-        } else if (row.error) card.append(ui.h("p", "be-muted", row.error + (row.state === "error" && !row.diagnostics ? "\uFF08\u65E7\u8BB0\u5F55\u672A\u4FDD\u5B58\u9519\u8BEF\u5206\u7C7B\uFF0C\u53EF\u624B\u52A8\u91CD\u8BD5\u83B7\u53D6\u8BCA\u65AD\uFF09" : "")));
-        if (!["pending", "analyzing"].includes(row.state)) {
-          const retry = ui.button(row.state === "needs_review" ? "\u66F4\u6362\u6A21\u578B\u540E\u91CD\u65B0\u5224\u65AD" : row.analysis ? "\u91CD\u65B0\u5206\u6790\uFF08\u6E05\u9664\u672C\u6B21\u53CD\u9988\uFF09" : (row.diagnostics?.repeatCount ?? 0) >= 2 ? "\u8C03\u6574\u8BBE\u7F6E\u540E\u91CD\u8BD5" : "\u5206\u6790\u8FD9\u53E5\u8BDD");
-          retry.disabled = !settings.enabled;
-          retry.addEventListener("click", () => {
-            retry.disabled = true;
-            void ctx.invoke("retry", [row.id]).then(() => {
-              signature = "";
-              return refresh();
-            }).catch(fail).finally(() => retry.disabled = !settings.enabled);
-          }, { signal });
-          card.append(retry);
-        }
-        if (["error", "needs_review", "unavailable", "deferred"].includes(row.state)) {
-          const skip = ui.button("\u8DF3\u8FC7\u8FD9\u6761");
-          skip.addEventListener("click", () => {
-            skip.disabled = true;
-            void ctx.invoke("skip", [row.id]).then(() => {
-              signature = "";
-              return refresh();
-            }).catch(fail).finally(() => skip.disabled = false);
-          }, { signal });
-          card.append(skip);
-        }
-        list.append(card);
-      }
-    } catch (e) {
-      fail(e);
-    } finally {
-      refreshing = false;
-    }
-  }
-  detect.addEventListener("click", () => {
-    detect.disabled = true;
-    notify("\u6B63\u5728\u68C0\u6D4B\u672C\u673A Ollama \u6A21\u578B\uFF0C\u8BF7\u7A0D\u5019\u2026");
-    void ctx.invoke("models").then((data) => {
-      if (signal.aborted) return;
-      model.replaceChildren(placeholder);
-      for (const name of data.models) {
-        const o = ui.h("option", null, name);
-        o.value = name;
-        model.append(o);
-      }
-      notify(data.error || (data.models.length ? "\u5DF2\u68C0\u6D4B\u5230\u6A21\u578B\uFF0C\u8BF7\u9009\u62E9\u540E\u5F00\u542F\uFF1B\u5DF2\u5F00\u542F\u65F6\u53EF\u6682\u505C\u540E\u5207\u6362\u3002" : "Ollama \u5DF2\u8FDE\u63A5\u4F46\u672A\u5B89\u88C5\u6A21\u578B\uFF0C\u8BF7\u5148\u5B89\u88C5\u540E\u91CD\u65B0\u68C0\u6D4B\u3002"), !!data.error);
-    }).catch(fail).finally(() => detect.disabled = false);
-  }, { signal });
-  save.addEventListener("click", () => {
-    save.disabled = true;
-    void ctx.invoke("cloud", [{ provider: provider.value, model: cloudModel.value, apiKey: key.value }]).then(() => {
-      key.value = "";
-      key.placeholder = "\u5BC6\u94A5\u5DF2\u4FDD\u5B58\uFF0C\u7559\u7A7A\u4FDD\u7559";
-      notify("\u4E91\u7AEF\u8BBE\u7F6E\u5DF2\u4FDD\u5B58\uFF0C\u8BB0\u5F55\u5DF2\u6682\u505C\uFF1B\u70B9\u51FB\u5F00\u59CB\u540E\u53D1\u9001\u65B0\u53D1\u8A00\u7ED9\u4E91\u7AEF\u5206\u6790\u3002");
-      return refresh();
-    }).catch(fail).finally(() => save.disabled = false);
-  }, { signal });
-  removeKey.addEventListener("click", () => {
-    void ctx.invoke("cloud", [{ provider: provider.value, model: cloudModel.value, clearKey: true }]).then(() => {
-      key.value = "";
-      key.placeholder = "\u8BF7\u8F93\u5165 API Key";
-      notify("\u5BC6\u94A5\u5F15\u7528\u5DF2\u505C\u7528\uFF0C\u8BB0\u5F55\u5DF2\u6682\u505C\u3002\u90E8\u7F72 .env \u4E2D\u4ECD\u4FDD\u7559\u51ED\u8BC1\uFF1B\u5F7B\u5E95\u64A4\u9500\u8BF7\u5230\u670D\u52A1\u5546\u7BA1\u7406\u9875\u9762\u3002");
-      return refresh();
-    }).catch(fail);
-  }, { signal });
-  toggle.addEventListener("click", () => {
-    toggle.disabled = true;
-    void ctx.invoke("configure", [{ enabled: !settings.enabled, backend: backend.value, model: model.value }]).then(() => {
-      signature = "";
-      return refresh();
-    }).catch(fail).finally(() => toggle.disabled = false);
-  }, { signal });
-  const confirmClear = ui.button("\u786E\u8BA4\u6E05\u7A7A\u8FD9100\u6761\u4EE5\u5185\u7684\u8BB0\u5F55");
-  confirmClear.hidden = true;
-  controls.append(confirmClear);
-  clear.addEventListener("click", () => confirmClear.hidden = !confirmClear.hidden, { signal });
-  confirmClear.addEventListener("click", () => {
-    confirmClear.disabled = true;
-    void ctx.invoke("clear").then(() => {
-      drafts.clear();
-      signature = "";
-      confirmClear.hidden = true;
-      notify("\u8BB0\u5F55\u5DF2\u6E05\u7A7A\u3002");
-      return refresh();
-    }).catch(fail).finally(() => confirmClear.disabled = false);
-  }, { signal });
-  void refresh();
-  ctx.interval(() => {
-    void refresh();
-  }, 2500);
-} };
-
 // web/client.ts
-var bundle = { panels: { guide: guidePanel, records: recordsPanel, library: { mount(ctx) {
+var bundle = { panels: { library: { mount(ctx) {
   const { ui, root, signal } = ctx;
   root.classList.add("be-library");
   root.append(ui.h("style", null, styles));
@@ -612,6 +113,7 @@ var bundle = { panels: { guide: guidePanel, records: recordsPanel, library: { mo
   intro.append(ui.h("h2", null, "\u7ED9\u5FC3\u60C5\u52A0\u4E00\u4E2A\u8868\u60C5"), ui.h("p", "be-muted", "\u76F4\u63A5\u7528\u4E8E\u539F\u7248\u684C\u5BA0\u6C14\u6CE1\u3002\u8EAB\u4F53\u6620\u5C04\u9762\u5411\u5185\u7F6E19\u79CD\u8868\u60C5\uFF0C\u4EC5\u4F9B\u53C2\u8003\uFF0C\u4E0D\u81EA\u52A8\u6267\u884C\u52A8\u4F5C\u3002"));
   header.append(intro);
   page.append(header);
+  mountDraftSettings(ctx, page);
   const habit = ui.h("p", "be-habit", "\u56DE\u5E94\u65B9\u5F0F\u7531\u4E3B\u7A0B\u5E8F\u300C\u4E60\u60EF\u300D\u7BA1\u7406\u3002");
   page.append(habit);
   let loading = false;
@@ -793,12 +295,12 @@ var bundle = { panels: { guide: guidePanel, records: recordsPanel, library: { mo
       mappingForm.append(allowed.group, forbidden.group, field("\u8EAB\u4F53\u5FC3\u60C5", target), field("\u5BF9\u5E94\u7A0B\u5EA6", match), field("\u6620\u5C04\u8BF4\u660E", reason), ui.h("p", "be-muted", "\u81EA\u5B9A\u4E49\u8EAB\u4F53\u6620\u5C04\u7528\u4E8E\u5EFA\u8BAE\uFF0C\u4E0D\u4FDD\u8BC1\u81EA\u52A8\u64AD\u653E\uFF1B\u7981\u7528\u60C5\u7EEA\u4F18\u5148\u3002"), mappingSave);
       mappingForm.addEventListener("submit", (event) => {
         event.preventDefault();
-        const emotions2 = allowed.values(), blocked = forbidden.values();
-        if (!emotions2.length) {
+        const emotions = allowed.values(), blocked = forbidden.values();
+        if (!emotions.length) {
           notify("\u8BF7\u81F3\u5C11\u9009\u62E9\u4E00\u79CD\u9002\u7528\u60C5\u7EEA", true);
           return;
         }
-        if (emotions2.some((x) => blocked.includes(x))) {
+        if (emotions.some((x) => blocked.includes(x))) {
           notify("\u540C\u4E00\u60C5\u7EEA\u4E0D\u80FD\u540C\u65F6\u8BBE\u4E3A\u9002\u7528\u548C\u7981\u7528", true);
           return;
         }
@@ -808,7 +310,7 @@ var bundle = { panels: { guide: guidePanel, records: recordsPanel, library: { mo
         }
         if (!mappingForm.reportValidity()) return;
         mappingSave.disabled = true;
-        void update(e.id, { emotions: emotions2, forbidden: blocked, bodyExpression: target.value || void 0, bodyMatch: target.value ? match.value : "none", bodyMatchReason: reason.value.trim() }).then(() => notify("\u6620\u5C04\u5DF2\u4FDD\u5B58\uFF0C\u540E\u7EED\u641C\u7D22\u548C\u8349\u7A3F\u68C0\u67E5\u5C06\u4F7F\u7528\u65B0\u6620\u5C04")).catch(fail).finally(() => {
+        void update(e.id, { emotions, forbidden: blocked, bodyExpression: target.value || void 0, bodyMatch: target.value ? match.value : "none", bodyMatchReason: reason.value.trim() }).then(() => notify("\u6620\u5C04\u5DF2\u4FDD\u5B58\uFF0C\u540E\u7EED\u641C\u7D22\u548C\u8349\u7A3F\u68C0\u67E5\u5C06\u4F7F\u7528\u65B0\u6620\u5C04")).catch(fail).finally(() => {
           mappingSave.disabled = false;
         });
       }, { signal });

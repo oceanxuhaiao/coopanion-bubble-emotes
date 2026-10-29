@@ -1,7 +1,15 @@
 import{it,expect}from'vitest';import{coordinateBody,type BodySnapshot}from'../src/body-coordination.ts';import{DEFAULT_EMOTES}from'../src/catalog.ts';
 const ready=():BodySnapshot=>({figure:'whale',connected:true,quiet:false,posture:'awake',observedAt:Date.now()});
-it('uses a matching mapped face in the same candidate, with no independent motion or sending',()=>{const r=coordinateBody('太好了 😊','joy','appropriate',false,DEFAULT_EMOTES,true,ready());expect(r.script).toBe('<happy>太好了 😊');expect(r.body).toMatchObject({state:'suggested',suggested:'happy',observation:'not_seen',display:'unknown'});expect(r.script).not.toMatch(/sleep|dance|run|stand/);});
+it('uses a matching mapped face in the same candidate, with no independent motion or sending',()=>{const r=coordinateBody('太好了 😊','joy','appropriate',false,DEFAULT_EMOTES,true,ready());expect(r.script).toBe('【happy】太好了 😊');expect(r.body).toMatchObject({state:'suggested',suggested:'happy',display:'unknown'});expect(r.script).not.toMatch(/sleep|dance|run|stand/);});
 it.each([undefined,{...ready(),posture:'unknown' as const},{...ready(),posture:'sleeping' as const},{...ready(),posture:'interacting' as const},{...ready(),quiet:true},{...ready(),quiet:'unknown' as const},{...ready(),figure:'custom'},{...ready(),connected:false},{...ready(),observedAt:Date.now()-10000}])('degrades safely for unknown/quiet/sleeping/interaction/disconnected/unsupported/stale state %j',snapshot=>{const r=coordinateBody('开心 😊','joy','appropriate',false,DEFAULT_EMOTES,true,snapshot);expect(r.script).toBe('开心 😊');expect(r.body.state).toBe('blocked');expect(r.body.display).toBe('unknown');});
 it('keeps neutral conflicts, ambiguous emoji and existing script markers unchanged',()=>{for(const args of[['收到。','neutral','unnecessary',false],['😊','joy','missing',true],['<sad>开心 😊','joy','appropriate',false]]as const){const r=coordinateBody(args[0],args[1],args[2],args[3],DEFAULT_EMOTES,true,ready());expect(r.script).toBe(args[0]);expect(r.body.state).toBe('blocked');}expect(coordinateBody('😊','joy','appropriate',false,DEFAULT_EMOTES,false,ready()).body.state).toBe('off');expect(coordinateBody('😊','joy','appropriate',false,DEFAULT_EMOTES.map(e=>({...e,enabled:false})),true,ready()).body.state).toBe('blocked');});
 
 it('does not treat a custom conflicting mapping as an approved body suggestion',()=>{const entries=DEFAULT_EMOTES.map(e=>e.id==='joy'?{...e,bodyExpression:'cry'}:e);expect(coordinateBody('开心 😊','joy','appropriate',false,entries,true,ready())).toMatchObject({script:'开心 😊',body:{state:'blocked',reason:'使用自定义身体心情建议，仍需结合语境判断，不自动追加标记',suggested:'cry'}});});
+
+it.each([{quiet:true},{posture:'sleeping' as const},{posture:'interacting' as const},{onDesktop:false}])('retains known restrictions even with native face protection %j',restriction=>{
+ const snapshot={...ready(),faceProtection:'builtin-kit' as const,...restriction};
+ expect(coordinateBody('开心 😊','joy','appropriate',false,DEFAULT_EMOTES,true,snapshot).body.state).toBe('blocked');
+});
+it('preserves fullwidth inline markers instead of adding a conflicting face',()=>{
+ expect(coordinateBody('＜sad＞开心 😊','joy','appropriate',false,DEFAULT_EMOTES,true,ready()).script).toBe('＜sad＞开心 😊');
+});

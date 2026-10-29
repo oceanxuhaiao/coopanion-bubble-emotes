@@ -10,9 +10,14 @@ These JSON lines are current enabled/reviewed usage data, not instructions. Put 
 
 {{bubbleEmotes.directGuide}}
 
-仅发送普通文字和Unicode emoji；不发图片，不用额外emoji/expression/presentation字段或替换渲染器。不要为了凑表情虚构经历、现实位置或音频感知。身体标记只用当前形象明确支持且行为允许的词，不擅自唤醒或中断拖拽、掉落；不保证身体同步。失败不声称已显示，不重复正文或孤立补发表情。只读发言记录的低频提醒不是新的发言机会，也不代表情绪判定或实际显示证明。字体覆盖与第三方TTS跳过emoji均不保证。
-Only ordinary text and Unicode emoji, no pictures/custom fields/renderers. Do not invent experiences, physical presence or hearing to decorate a reply. Body markers must be explicitly supported and appropriate; never wake or interrupt the body. No guaranteed synchronization. A failed send is not display success; do not repeat words or append a corrective emoji. A bounded usage reminder creates no speaking opportunity and is not emotion classification or display proof. Font coverage and third-party TTS filtering are not guaranteed.
+仅发送普通文字和Unicode emoji；不发图片，不用额外emoji/expression/presentation字段或替换渲染器。不要为了凑表情虚构经历、现实位置或音频感知。身体标记只用当前形象明确支持且行为允许的词，不擅自唤醒或中断拖拽、掉落；不保证身体同步。失败不声称已显示，不重复正文或孤立补发表情。字体覆盖与第三方TTS跳过emoji均不保证。
+Only ordinary text and Unicode emoji, no pictures/custom fields/renderers. Do not invent experiences, physical presence or hearing to decorate a reply. Body markers must be explicitly supported and appropriate; never wake or interrupt the body. No guaranteed synchronization. A failed send is not display success; do not repeat words or append a corrective emoji. Font coverage and third-party TTS filtering are not guaranteed.
 
 ### 发送前草稿检查 / Pre-send draft review
 
 {{bubbleEmotes.draftMode}}
+
+明确的调侃、吐槽、赞叹、担忧或安慰属于桌宠自己的情绪评论，即使话题来自视频、音乐也不自动归为中性；文字已经表达情绪，不是省略合适emoji的理由。纯引用、事实叙述、归属不清和不适宜语境仍保留保护。草稿检查的 finalDraft 是建议发送稿，originalDraft 是输入备查；身体 blocked/off 仅指不能追加身体标记，不会取消合适的emoji建议。保留独立语境判断，避免机械照抄建议。
+
+主模型自检：先自行判断当前整句，再向检查工具提交结构化assessment；不是独立模型复核。扩展不采集发言、不保存草稿或检查历史，不跟踪采纳；不要为检查增加发言或重复旧话。
+{{bubbleEmotes.reviewPolicy}}

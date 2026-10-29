@@ -2,14 +2,14 @@ import{EMOTIONS}from'../src/catalog.ts';
 import type{Emotion}from'../src/library.ts';
 import{EMOTION_LABELS}from'./emotion-labels.ts';
 import{BODY_EXPRESSIONS,BODY_MATCH_LABELS,type BodyExpression}from'../src/body-mapping.ts';
-import {guidePanel} from './guide.ts';
+import {mountDraftSettings} from './draft-settings.ts';
 import type { WebUiClientBundle, WebUiPanelContext } from 'cortico/web/shared/client-panel.ts';
 import type { Emote } from '../src/library.ts';
 import { styles } from './styles.ts';
-import { recordsPanel } from './records.ts';
-const bundle: WebUiClientBundle = {panels:{guide:guidePanel,records:recordsPanel,library:{mount(ctx:WebUiPanelContext){
+const bundle: WebUiClientBundle = {panels:{library:{mount(ctx:WebUiPanelContext){
  const {ui,root,signal}=ctx;root.classList.add('be-library');root.append(ui.h('style',null,styles));const page=ui.h('div','be-page');root.append(page);
  const header=ui.h('div','be-header'),intro=ui.h('div');intro.append(ui.h('h2',null,'给心情加一个表情'),ui.h('p','be-muted','直接用于原版桌宠气泡。身体映射面向内置19种表情，仅供参考，不自动执行动作。'));header.append(intro);page.append(header);
+ mountDraftSettings(ctx,page);
  const habit=ui.h('p','be-habit','回应方式由主程序「习惯」管理。');page.append(habit);
  let loading=false;async function refreshHabit(){if(loading||signal.aborted)return;loading=true;try{const r=await fetch('/api/webui/providers/world%3Adesktop-pet/panels/pet/state',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:'{"args":[]}',signal});if(!r.ok)throw Error();const s=await r.json();if(signal.aborted)return;const labels:Record<string,string>={none:'安静',poke:'默认',all:'积极',custom:'自定义'};habit.textContent=labels[s.wake?.wakeOn]?'当前习惯 · '+labels[s.wake.wakeOn]+'模式':'回应方式由主程序「习惯」管理。';}catch{if(!signal.aborted)habit.textContent='习惯状态暂不可用；可继续管理表情。';}finally{loading=false;}}
  void refreshHabit();ctx.interval(()=>{void refreshHabit();},5000);

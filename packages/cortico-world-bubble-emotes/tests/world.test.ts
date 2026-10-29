@@ -1,4 +1,4 @@
-import{describe,it,expect,afterEach}from'vitest';
+import{describe,it,expect,afterEach,vi}from'vitest';
 import{mkdtempSync,rmSync,readFileSync,writeFileSync}from'node:fs';import{tmpdir}from'node:os';import{join}from'node:path';
 import type{WorldHost,ToolOutcome}from'cortico/core/types.ts';import{BubbleEmotesWorld}from'../src/world.ts';import{BUBBLE_EMOTES}from'../src/definition.ts';import{parsePageId}from'cortico/web/shared/webui-protocol.ts';
 import {renderWorldEnvPrompt} from 'cortico/core/prefix.ts';
@@ -14,4 +14,26 @@ describe('stock-compatible emoji World',()=>{
  it('rejects replacing an emoji with an image',async()=>{const s=await setup();const e=(await s.invoke('library','list',[])as any[])[0];await expect(s.invoke('library','update',[{...e,kind:'sticker'}])).rejects.toThrow(/Unicode/);await s.world.stop();});
 });
 
-it('exposes three live native sidebar lamps and contains library failure without losing the panel',async()=>{const s=await setup();try{expect(s.world.webUi().lamps?.map(l=>l.state)).toEqual(['online','offline','offline']);const entries=await s.invoke('library','list',[])as any[];for(const e of entries)await s.invoke('library','update',[{...e,enabled:false}]);expect(s.world.webUi().lamps?.[0]).toMatchObject({state:'offline'});writeFileSync(join(s.dir,'bubble-emotes/library.json'),'broken');expect(s.world.webUi().lamps?.[0]).toMatchObject({state:'error'});expect(s.world.webUi().panels).toHaveLength(3);}finally{await s.world.stop();}expect(s.world.webUi().lamps?.every(l=>l.state==='offline')).toBe(true);});
+it('exposes three live native sidebar lamps and contains library failure without losing the panel',async()=>{const s=await setup();try{expect(s.world.webUi().lamps?.map(l=>l.state)).toEqual(['online','online']);const entries=await s.invoke('library','list',[])as any[];for(const e of entries)await s.invoke('library','update',[{...e,enabled:false}]);expect(s.world.webUi().lamps?.[0]).toMatchObject({state:'offline'});writeFileSync(join(s.dir,'bubble-emotes/library.json'),'broken');expect(s.world.webUi().lamps?.[0]).toMatchObject({state:'error'});expect(s.world.webUi().panels).toHaveLength(1);}finally{await s.world.stop();}expect(s.world.webUi().lamps?.every(l=>l.state==='offline')).toBe(true);});
+
+
+it.each([true,false])('checks a draft through the real World adapter, with desktop state available=%s',async available=>{
+ const originalFetch=globalThis.fetch;
+ vi.stubGlobal('fetch',async(url:any)=>{
+  if(String(url).includes('/panels/pet/state'))return new Response(JSON.stringify({connected:true,onDesktop:true,skin:{figure:'whale'},wake:{wakeOn:'none'}}),{status:available?200:503});
+  if(String(url).includes('11434'))return new Response(JSON.stringify({message:{content:JSON.stringify({emotion:'joy',verdict:'missing',explanation:'开心。',suggestion:'😊'})}}));
+  throw Error('Unexpected endpoint');
+ });
+ const s=await setup();
+ try{
+  await s.invoke('library','configure',[{enabled:true}]);
+  const result=await s.call('bubble_emotes_review_draft',{draft:'太好了',context:'好消息',assessment:{expressionIntent:'emotional_commentary',emojiSuitability:'suitable',emotion:'joy',verdict:'missing',explanation:'开心',suggestion:'😊'}});
+  const review=JSON.parse(result.text);
+  expect(review.finalDraft).toBe(available?'【happy】太好了 😊':'太好了 😊');
+  expect(review.body.state).toBe(available?'suggested':'blocked');
+  expect(review.sent).toBe(false);
+  await s.invoke('library','bodyCoordination',[false]);
+  const disabled=JSON.parse((await s.call('bubble_emotes_review_draft',{draft:'太好了',context:'好消息',assessment:{expressionIntent:'emotional_commentary',emojiSuitability:'suitable',emotion:'joy',verdict:'missing',explanation:'开心',suggestion:'😊'}})).text);
+  expect(disabled.finalDraft).toBe('太好了 😊');
+ }finally{await s.world.stop();globalThis.fetch=originalFetch;vi.unstubAllGlobals();}
+});

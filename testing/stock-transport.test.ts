@@ -18,26 +18,14 @@ it.each(['standalone','mixed','direct'])('stock 0.2.8 receives and renders %s em
 });
 it('documents the actual stock third-party voice limitation instead of asserting a filter',()=>{expect(speechText('陪你 💙')).toContain('💙');});
 
-it('observes real stock accepted-say records across turns without counting failed sends or waking the pet',async()=>{
- const dir=mkdtempSync(join(tmpdir(),'stock-usage-')),cfg=structuredClone(DESKTOP_PET_DEFAULTS);cfg.enabled=true;cfg.port=0;cfg.window.enabled=false;cfg.asr.enabled=false;
- const host=new FakeHost(),queued:any[]=[];host.pushDeferred=((spec:any,opts:any)=>queued.push({spec,opts}))as any;
- const pet=new DesktopPetWorld({cfg,timezone:'Asia/Shanghai',persist:()=>{},runtimesRoot:()=>join(dir,'runtimes'),modelsDir:()=>join(dir,'models')}),emotes=new BubbleEmotesWorld(dir);let page:FakePage|undefined;
- try{await pet.start(host);await emotes.start(host);const say=pet.tools().find(t=>t.name==='pet_say')!;
- expect(await say.handler({script:'not connected'},{role:'main',log:host.log})).toMatchObject({failed:true});emotes.onTurnEnded();expect(queued).toHaveLength(0);
- page=await FakePage.open(new URL(pet.petUrl).origin);
- for(let i=0;i<10;i++){await say.handler({script:'一条普通叙述'},{role:'main',log:host.log});await page.next(m=>m.t==='say');await new Promise(resolve=>setImmediate(resolve));emotes.onTurnEnded();if(i<9)expect(queued).toHaveLength(0);}
- expect(queued).toHaveLength(1);expect(queued[0].opts.trigger).toBe('piggyback');
- await say.handler({script:'我在这里 💙'},{role:'main',log:host.log});await page.next(m=>m.t==='say');await new Promise(resolve=>setImmediate(resolve));expect(queued[0].spec.render()).toBeNull();
- }finally{await page?.close();await emotes.stop();await pet.stop();rmSync(dir,{recursive:true,force:true});}
-});
 
-it('links native accepted speech to review, queued advice, host delivery and the next reply',async()=>{
- const dir=mkdtempSync(join(tmpdir(),'stock-feedback-')),cfg=structuredClone(DESKTOP_PET_DEFAULTS);cfg.enabled=true;cfg.port=0;cfg.window.enabled=false;cfg.asr.enabled=false;
- const host=new FakeHost(),queued:any[]=[];host.pushDeferred=((spec:any,opts:any)=>queued.push({spec,opts}))as any;
- const originalFetch=fetch;vi.stubGlobal('fetch',async(input:any,options:any)=>String(input)==='http://127.0.0.1:11434/api/chat'?new Response(JSON.stringify({message:{content:JSON.stringify({emotion:'comfort',verdict:'missing',explanation:'表达陪伴。',suggestion:'💙'})}})):originalFetch(input,options));
- const pet=new DesktopPetWorld({cfg,timezone:'Asia/Shanghai',persist:()=>{},runtimesRoot:()=>join(dir,'runtimes'),modelsDir:()=>join(dir,'models')}),emotes=new BubbleEmotesWorld(dir);let page:FakePage|undefined;
- try{await pet.start(host);await emotes.start(host);page=await FakePage.open(new URL(pet.petUrl).origin);const invoke=(m:string,a:any[]=[])=>emotes.webUi().invoke!('records',m,a);await invoke('configure',[{enabled:true,backend:'ollama',model:'synthetic'}]);const say=pet.tools().find(t=>t.name==='pet_say')!;
- await say.handler({script:'我会陪着你。'},{role:'main',log:host.log});await page.next(m=>m.t==='say');await new Promise(resolve=>setImmediate(resolve));emotes.onTurnEnded();await expect.poll(()=>queued.length).toBe(1);let state:any=await invoke('state');const id=state.rows[0].id;expect(state.rows[0].hint.state).toBe('queued');expect(queued[0].spec.render()).toContain('SAME pet_say.script');state=await invoke('state');expect(state.rows[0].hint.state).toBe('rendered');emotes.onEventsSettled([{type:'bubble-emotes.usage_hint',source:'bubble-emotes',cursor:host.store.latestCursor(),meta:queued[0].spec.meta}as any],'delivered');state=await invoke('state');expect(state.rows[0].hint.state).toBe('delivered');
- await say.handler({script:'我在呢 💙'},{role:'main',log:host.log});await page.next(m=>m.t==='say');await new Promise(resolve=>setImmediate(resolve));emotes.onTurnEnded();state=await invoke('state');expect(state.rows.find((r:any)=>r.id===id).hint.followup.hasEmoji).toBe(true);
+it('submits a checked final script through stock pet_say without collecting speech',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'stock-draft-only-')),cfg=structuredClone(DESKTOP_PET_DEFAULTS);cfg.enabled=true;cfg.port=0;cfg.window.enabled=false;cfg.asr.enabled=false;
+ const host=new FakeHost(),pet=new DesktopPetWorld({cfg,timezone:'Asia/Shanghai',persist:()=>{},runtimesRoot:()=>join(dir,'runtimes'),modelsDir:()=>join(dir,'models')}),emotes=new BubbleEmotesWorld(dir);let page:FakePage|undefined;
+ try{vi.stubGlobal('fetch',async()=>{throw Error('No external service');});await pet.start(host);await emotes.start({store:new Proxy({},{get(){throw Error('Unexpected event-store read');}})}as any);page=await FakePage.open(new URL(pet.petUrl).origin);
+ const result=await emotes.tools().find(t=>t.name==='bubble_emotes_review_draft')!.handler({draft:'我会陪着你。',context:'温柔陪伴',assessment:{expressionIntent:'emotional_commentary',emojiSuitability:'suitable',emotion:'comfort',verdict:'missing',explanation:'陪伴。',suggestion:'💙'}},{role:'main',log:host.log})as any;
+ const checked=JSON.parse(result.text);expect(checked.finalDraft).toBe('我会陪着你。 💙');
+ await pet.tools().find(t=>t.name==='pet_say')!.handler({script:checked.finalDraft},{role:'main',log:host.log});const order=await page.next(m=>m.t==='say');expect((order.beats as any[])[0].text).toBe(checked.finalDraft);
+ expect(emotes.webUi().panels?.map(p=>p.id)).toEqual(['library']);expect(emotes).not.toHaveProperty('onTurnEnded');const state=await emotes.webUi().invoke!('library','state',[])as any;expect(state).not.toHaveProperty('rows');
  }finally{vi.unstubAllGlobals();await page?.close();await emotes.stop();await pet.stop();rmSync(dir,{recursive:true,force:true});}
 });
